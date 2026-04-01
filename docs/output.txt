@@ -1,0 +1,557 @@
+{
+  "herbal_prescriptions": null,
+  "herbal_warnings": null,
+  "dietary_therapies": [
+    {
+      "dietary_therapy_id": 0,
+      "name": "生姜羊肉汤",
+      "category": "汤品",
+      "description": "温中散寒的经典药膳，适用于脾胃虚寒证。羊肉性温味甘，能温中补虚；生姜辛温，能温中散寒；大枣甘温，能补中益气，三者合用共奏温中健脾之功",
+      "ingredients": [
+        {
+          "name": "羊肉",
+          "amount": "500g",
+          "processing_method": "洗净切块，焯水去腥",
+          "notes": "选用新鲜羊肉，肥瘦相间为佳"
+        },
+        {
+          "name": "生姜",
+          "amount": "30g",
+          "processing_method": "去皮切厚片",
+          "notes": "选用老姜，辛温之性更强"
+        },
+        {
+          "name": "大枣",
+          "amount": "10枚",
+          "processing_method": "洗净去核",
+          "notes": "选用优质红枣，个大肉厚"
+        },
+        {
+          "name": "当归",
+          "amount": "15g",
+          "processing_method": "切片",
+          "notes": "药食同源，增强补血功效"
+        },
+        {
+          "name": "黄芪",
+          "amount": "20g",
+          "processing_method": "切片",
+          "notes": "补气健脾，增强体质"
+        }
+      ],
+      "preparation": "1. 羊肉洗净切块，冷水下锅焯水去腥，捞起备用；2. 生姜去皮切厚片，大枣洗净去核；3. 将羊肉、生姜、大枣、当归、黄芪一同放入砂锅中；4. 加入清水2000ml，大火煮沸后撇去浮沫；5. 转小火炖煮2小时至羊肉软烂；6. 最后调入适量盐和胡椒粉即可",
+      "efficacy": "温中散寒，补气养血，健脾暖胃，适用于脾胃虚寒所致的胃脘冷痛、食欲不振、畏寒肢冷等症",
+      "suitable_for": "脾胃虚寒证患者，体质偏寒者，慢性胃炎、胃溃疡恢复期患者，产后体虚者",
+      "contraindications": "热性体质者慎用，感冒发热期间禁用，高血压、心脏病患者适量食用，痛风患者慎用",
+      "serving_method": "趁热食用，每日1次，连续服用1-2周。可分2-3次食完，餐前半小时或餐后1小时食用效果更佳",
+      "storage_method": "现做现吃最佳，不宜久存。如有剩余可冷藏保存1-2天，食用前充分加热"
+    },
+    {
+      "dietary_therapy_id": 0,
+      "name": "山药薏米粥",
+      "category": "粥品",
+      "description": "健脾益胃的温和药膳，适合脾胃虚弱者长期食用。山药补脾益肾，薏米健脾渗湿，小米养胃安神，三者合用能温和调理脾胃功能",
+      "ingredients": [
+        {
+          "name": "山药",
+          "amount": "100g",
+          "processing_method": "去皮切块",
+          "notes": "选用新鲜山药，质地坚实"
+        },
+        {
+          "name": "薏米",
+          "amount": "50g",
+          "processing_method": "提前浸泡2小时",
+          "notes": "选用优质薏米，颗粒饱满"
+        },
+        {
+          "name": "小米",
+          "amount": "100g",
+          "processing_method": "淘洗干净",
+          "notes": "选用优质小米，色泽金黄"
+        },
+        {
+          "name": "红枣",
+          "amount": "8枚",
+          "processing_method": "洗净去核切片",
+          "notes": "增加甜味和补益功效"
+        },
+        {
+          "name": "枸杞子",
+          "amount": "15g",
+          "processing_method": "洗净",
+          "notes": "滋补肝肾，明目养血"
+        }
+      ],
+      "preparation": "1. 薏米提前浸泡2小时，山药去皮切块；2. 将薏米、小米放入锅中，加水1500ml；3. 大火煮沸后转小火煮30分钟；4. 加入山药块继续煮20分钟；5. 最后加入红枣片和枸杞子煮10分钟；6. 根据个人口味可加少量冰糖调味",
+      "efficacy": "健脾益胃，渗湿止泻，补中益气，适用于脾胃虚弱、食欲不振、大便溏薄、体倦乏力等症",
+      "suitable_for": "脾胃虚弱者，消化不良患者，老人儿童，病后体虚者，慢性腹泻患者",
+      "contraindications": "糖尿病患者慎加糖，便秘者减少薏米用量，孕妇慎用薏米",
+      "serving_method": "温热食用，每日1-2次，可作为主食或加餐。建议早餐或晚餐食用，连续服用2-4周",
+      "storage_method": "现煮现吃最佳，可冷藏保存1天，食用前加热至温热即可"
+    },
+    {
+      "dietary_therapy_id": 0,
+      "name": "陈皮蜂蜜茶",
+      "category": "茶饮",
+      "description": "理气健脾的温和茶饮，适合脾胃气滞、消化不良者。陈皮理气健脾，蜂蜜润燥通便，生姜温中散寒，三者合用能调理脾胃气机",
+      "ingredients": [
+        {
+          "name": "陈皮",
+          "amount": "10g",
+          "processing_method": "洗净切丝",
+          "notes": "选用3年以上陈皮，理气功效更佳"
+        },
+        {
+          "name": "生姜",
+          "amount": "3片",
+          "processing_method": "切薄片",
+          "notes": "温中散寒，增强脾胃功能"
+        },
+        {
+          "name": "蜂蜜",
+          "amount": "适量",
+          "processing_method": "温水冲调",
+          "notes": "选用优质蜂蜜，润燥通便"
+        },
+        {
+          "name": "红枣",
+          "amount": "3枚",
+          "processing_method": "去核切片",
+          "notes": "补中益气，调和药性"
+        }
+      ],
+      "preparation": "1. 陈皮洗净切丝，生姜切薄片，红枣去核切片；2. 将陈皮、生姜、红枣放入茶壶中；3. 加入沸水300ml，盖盖焖泡10分钟；4. 待水温降至60℃以下时加入蜂蜜调味；5. 搅拌均匀即可饮用",
+      "efficacy": "理气健脾，温中散寒，润燥通便，适用于脾胃气滞、消化不良、胃胀腹胀、便秘等症",
+      "suitable_for": "脾胃气滞者，消化不良患者，便秘者，胃胀腹胀者，老年人",
+      "contraindications": "糖尿病患者慎用蜂蜜，热性体质者减少生姜用量，腹泻者慎用蜂蜜",
+      "serving_method": "温热饮用，每日2-3次，餐前30分钟或餐后1小时饮用。可连续饮用1-2周",
+      "storage_method": "现泡现饮，不宜久存。可一次泡制一天的用量，分次饮用"
+    }
+  ],
+  "dietary_warnings": [
+    {
+      "warning_type": "药食相互作用",
+      "title": "薏米与某些药物的相互作用",
+      "content": "薏米具有利水渗湿作用，可能增强利尿药物的效果，与降血糖药物同时使用时需要监测血糖变化",
+      "severity_level": "中等",
+      "affected_ingredients": [
+        "薏米"
+      ],
+      "symptoms_to_watch": "血糖波动、电解质紊乱、过度利尿",
+      "action_required": "服用降血糖药物或利尿药物的患者应咨询医师后食用",
+      "prevention_measures": "定期监测血糖和电解质水平，适量食用",
+      "special_populations": "糖尿病患者、服用利尿药物的患者需特别注意"
+    },
+    {
+      "warning_type": "食材不良反应",
+      "title": "蜂蜜过敏反应",
+      "content": "部分人群对蜂蜜中的花粉或蜂蜜蛋白过敏，可能出现皮疹、呼吸困难等过敏症状",
+      "severity_level": "中等",
+      "affected_ingredients": [
+        "蜂蜜"
+      ],
+      "symptoms_to_watch": "皮疹、瘙痒、呼吸困难、胃肠不适",
+      "action_required": "出现过敏症状立即停止食用，严重者就医",
+      "prevention_measures": "首次食用少量试用，有过敏史者避免食用",
+      "special_populations": "过敏体质者、1岁以下婴儿禁用蜂蜜"
+    },
+    {
+      "warning_type": "禁忌症",
+      "title": "孕妇慎用薏米",
+      "content": "薏米性寒滑利，有滑胎作用，孕妇特别是孕早期食用可能增加流产风险",
+      "severity_level": "严重",
+      "affected_ingredients": [
+        "薏米"
+      ],
+      "symptoms_to_watch": "腹痛、阴道出血、胎动异常",
+      "action_required": "孕妇应避免食用含薏米的药膳，如有不适立即就医",
+      "prevention_measures": "孕妇选择其他健脾食材替代薏米，如山药、白扁豆等",
+      "special_populations": "孕妇，特别是孕早期（前3个月）女性"
+    },
+    {
+      "warning_type": "特殊人群",
+      "title": "糖尿病患者注意事项",
+      "content": "药膳中的蜂蜜、红枣等含糖量较高，糖尿病患者食用后可能影响血糖控制",
+      "severity_level": "中等",
+      "affected_ingredients": [
+        "蜂蜜",
+        "红枣"
+      ],
+      "symptoms_to_watch": "血糖升高、多饮多尿、疲乏无力",
+      "action_required": "糖尿病患者应减少或避免添加蜂蜜，监测血糖变化",
+      "prevention_measures": "可用木糖醇等代糖替代蜂蜜，减少红枣用量",
+      "special_populations": "糖尿病患者、血糖控制不佳者"
+    }
+  ],
+  "acupuncture_points": [
+    {
+      "point_name": "太冲",
+      "location": "足背侧，当第1、2跖骨结合部之前凹陷中",
+      "method": "毫针刺法",
+      "technique": "平补平泻，得气后行捻转手法",
+      "needle_specification": "0.30×40mm毫针",
+      "depth": "直刺0.5-0.8寸",
+      "duration": "留针30分钟",
+      "frequency": "隔日1次，10次为一疗程",
+      "efficacy": "疏肝理气，平肝潜阳，调经止痛",
+      "indications": "肝郁气滞，胸胁胀痛，情志抑郁，月经不调，头痛眩晕",
+      "instructions": "针刺时患者取仰卧位，常规消毒后垂直进针，得气后行平补平泻手法，以患者有酸胀感为度",
+      "notes": "肝经原穴，疏肝理气要穴，孕妇慎用",
+      "contraindications": "孕妇禁针，局部皮肤破损者禁针"
+    },
+    {
+      "point_name": "期门",
+      "location": "胸部，当乳头直下，第6肋间隙，前正中线旁开4寸",
+      "method": "毫针刺法",
+      "technique": "斜刺，向外下方刺入，轻刺激",
+      "needle_specification": "0.25×25mm毫针",
+      "depth": "斜刺0.3-0.5寸",
+      "duration": "留针25分钟",
+      "frequency": "隔日1次，10次为一疗程",
+      "efficacy": "疏肝理气，调理气机，宽胸利膈",
+      "indications": "肝郁气滞，胸胁胀痛，脘腹胀满，呃逆",
+      "instructions": "患者取仰卧位，针尖向外下方斜刺，避免刺入过深，以免伤及肺脏",
+      "notes": "肝经募穴，治疗肝郁气滞的重要穴位，针刺时注意深度",
+      "contraindications": "孕妇慎用，肺部疾患者慎用，不宜深刺直刺"
+    },
+    {
+      "point_name": "膻中",
+      "location": "胸部，前正中线上，平第4肋间隙，两乳头连线的中点",
+      "method": "毫针刺法",
+      "technique": "平刺，沿皮刺入，轻柔手法",
+      "needle_specification": "0.25×25mm毫针",
+      "depth": "平刺0.3-0.5寸",
+      "duration": "留针30分钟",
+      "frequency": "隔日1次，10次为一疗程",
+      "efficacy": "宽胸理气，调畅气机，宁心安神",
+      "indications": "胸闷气短，心悸怔忡，情志抑郁，乳腺疾病",
+      "instructions": "患者取仰卧位，针尖向下平刺，沿皮下刺入，手法宜轻柔，避免刺入过深",
+      "notes": "气会穴，调理全身气机的重要穴位，女性患者尤为适用",
+      "contraindications": "孕妇慎用，心脏病患者慎用，不宜深刺直刺"
+    },
+    {
+      "point_name": "三阴交",
+      "location": "小腿内侧，当足内踝尖上3寸，胫骨内侧缘后方",
+      "method": "毫针刺法",
+      "technique": "直刺，得气后行补法",
+      "needle_specification": "0.30×40mm毫针",
+      "depth": "直刺1.0-1.5寸",
+      "duration": "留针30分钟",
+      "frequency": "隔日1次，10次为一疗程",
+      "efficacy": "健脾益气，滋肾养肝，调经止带",
+      "indications": "脾胃虚弱，月经不调，带下病，失眠多梦",
+      "instructions": "患者取仰卧位或侧卧位，常规消毒后垂直进针，得气后行补法，以患者有温热感向上传导为佳",
+      "notes": "脾、肝、肾三经交会穴，调理妇科疾病的要穴",
+      "contraindications": "孕妇禁针，月经期慎用，针刺时避免刺伤血管神经"
+    },
+    {
+      "point_name": "肝俞",
+      "location": "背部，当第9胸椎棘突下，旁开1.5寸",
+      "method": "毫针刺法",
+      "technique": "直刺，得气后行平补平泻法",
+      "needle_specification": "0.30×50mm毫针",
+      "depth": "直刺0.8-1.2寸",
+      "duration": "留针30分钟",
+      "frequency": "隔日1次，10次为一疗程",
+      "efficacy": "疏肝理气，调理肝脏功能，明目安神",
+      "indications": "肝郁气滞，胁肋胀痛，目赤肿痛，情志不遂",
+      "instructions": "患者取俯卧位，常规消毒后垂直进针，避免刺入过深，以免伤及内脏",
+      "notes": "肝脏背俞穴，调理肝脏功能的重要穴位",
+      "contraindications": "孕妇慎用，局部皮肤感染者禁针，不宜深刺"
+    },
+    {
+      "point_name": "神门",
+      "location": "腕部，腕掌侧横纹尺侧端，尺侧腕屈肌腱的桡侧凹陷处",
+      "method": "毫针刺法",
+      "technique": "直刺，得气后行补法",
+      "needle_specification": "0.25×25mm毫针",
+      "depth": "直刺0.3-0.5寸",
+      "duration": "留针30分钟",
+      "frequency": "每日1次，10次为一疗程",
+      "efficacy": "宁心安神，清心火，调理心神",
+      "indications": "心悸怔忡，失眠多梦，健忘，癫狂痫证",
+      "instructions": "患者取坐位或仰卧位，手掌向上，常规消毒后垂直进针，手法宜轻柔",
+      "notes": "心经原穴，安神定志的要穴，可配合耳穴压豆",
+      "contraindications": "局部皮肤破损者禁针，针刺时避免刺伤血管神经"
+    }
+  ],
+  "moxibustion_points": [
+    {
+      "point_name": "关元",
+      "location": "下腹部，前正中线上，当脐中下3寸",
+      "method": "温和灸",
+      "moxa_type": "艾条",
+      "technique": "点燃艾条一端，距离穴位皮肤2-3cm，以患者感到温热舒适为度，缓慢回旋熏灸",
+      "temperature_control": "温热感，避免烫伤，以患者能耐受的温度为准",
+      "duration": "每穴15-20分钟",
+      "frequency": "每日1次",
+      "course_duration": "连续治疗4-6周",
+      "efficacy": "培元固本，补肾壮阳，温中健脾，调理冲任，增强机体免疫功能",
+      "indications": "脾肾阳虚，畏寒肢冷，腰膝酸软，大便溏薄，小便清长，月经不调，不孕症",
+      "technique_points": "艾条点燃后先试温度，保持适当距离，手法要稳定，避免烫伤。可配合腹式呼吸，增强效果",
+      "precautions": "孕妇禁用，月经期慎用，皮肤过敏者先试敏，注意防火安全，保持室内通风",
+      "contraindications": "孕妇禁用，急性炎症期禁用，高热患者禁用，皮肤破损感染者禁用",
+      "post_treatment_care": "艾灸后注意保暖，避免受风寒，多饮温开水，避免立即洗澡，注意观察局部皮肤反应",
+      "combination_therapy": "可配合中药汤剂、针刺、推拿等方法，增强温阳补肾效果"
+    },
+    {
+      "point_name": "神阙",
+      "location": "腹中部，脐中央",
+      "method": "隔盐灸",
+      "moxa_type": "艾柱",
+      "technique": "在脐中填入适量食盐，盐上放置艾柱点燃，以患者感到温热为度",
+      "temperature_control": "温热舒适，避免过热，如感觉过热可暂停片刻",
+      "duration": "每次3-5壮，每壮约5-8分钟",
+      "frequency": "隔日1次",
+      "course_duration": "连续治疗3-4周",
+      "efficacy": "温中健脾，回阳救逆，调理肠胃，增强消化功能，提高机体阳气",
+      "indications": "脾胃虚寒，腹痛腹泻，消化不良，慢性肠炎，体质虚弱",
+      "technique_points": "选用干燥洁净的食盐，艾柱大小适中，点燃后观察燃烧情况，及时更换艾柱",
+      "precautions": "孕妇禁用，脐部皮肤破损者禁用，注意艾柱燃烧安全，防止烫伤",
+      "contraindications": "孕妇禁用，脐疝患者禁用，腹部急性炎症禁用，皮肤过敏者慎用",
+      "post_treatment_care": "艾灸后清理脐部残留盐粒，保持脐部清洁干燥，注意腹部保暖",
+      "combination_therapy": "可与关元、气海等穴位配合使用，增强温中健脾效果"
+    },
+    {
+      "point_name": "足三里",
+      "location": "小腿前外侧，当犊鼻下3寸，距胫骨前缘一横指",
+      "method": "温和灸",
+      "moxa_type": "艾条",
+      "technique": "点燃艾条，距离穴位2-3cm，以温热感为度，可配合轻柔的回旋动作",
+      "temperature_control": "温热舒适，以患者感到温暖但不烫为宜",
+      "duration": "每穴10-15分钟",
+      "frequency": "每日1次",
+      "course_duration": "连续治疗4-6周",
+      "efficacy": "健脾益胃，补中益气，调理脾胃功能，增强体质，提高免疫力",
+      "indications": "脾胃虚弱，消化不良，腹胀腹泻，体质虚弱，免疫力低下",
+      "technique_points": "患者可取坐位或仰卧位，充分暴露小腿，艾条保持垂直，手法要稳定",
+      "precautions": "注意艾条燃烧安全，避免烫伤，皮肤敏感者适当增加距离",
+      "contraindications": "局部皮肤破损感染者禁用，急性炎症期慎用",
+      "post_treatment_care": "艾灸后注意腿部保暖，可适当活动，促进气血运行",
+      "combination_therapy": "可配合脾俞、胃俞等背俞穴，增强健脾益胃效果"
+    },
+    {
+      "point_name": "肾俞",
+      "location": "腰部，当第2腰椎棘突下，旁开1.5寸",
+      "method": "温和灸",
+      "moxa_type": "艾条",
+      "technique": "患者俯卧位，点燃艾条距离穴位2-3cm，以温热感向深部渗透为佳",
+      "temperature_control": "温热深透，以患者感到温暖舒适，有热感向腹部渗透为佳",
+      "duration": "每穴15-20分钟",
+      "frequency": "隔日1次",
+      "course_duration": "连续治疗4-6周",
+      "efficacy": "补肾壮阳，强腰健骨，调理肾脏功能，改善腰膝酸软",
+      "indications": "肾阳虚衰，腰膝酸软，畏寒肢冷，阳痿早泄，月经不调",
+      "technique_points": "命门为督脉要穴，艾灸时要求温热感深透，可配合深呼吸",
+      "precautions": "孕妇慎用，腰部急性损伤期慎用，注意防火安全",
+      "contraindications": "孕妇禁用，高热患者禁用，局部皮肤破损者禁用",
+      "post_treatment_care": "艾灸后注意腰部保暖，避免受风寒，可饮用温开水",
+      "combination_therapy": "可配合肾俞、关元等穴位，增强补肾壮阳效果"
+    }
+  ],
+  "cupping_points": [
+    {
+      "area": "腰部及腹部",
+      "specific_points": "肾俞穴、大肠俞穴、委中穴、环跳穴",
+      "suitable_for": "寒湿痹阻证，腹胀、失眠、消化不良",
+      "method": "干拔法",
+      "cup_type": "玻璃罐",
+      "cup_size": "中号罐（直径5-6cm）",
+      "suction_strength": "中度吸力",
+      "duration": "留罐10-12分钟",
+      "frequency": "隔日1次",
+      "efficacy": "温经散寒，祛湿通络，理气化滞，改善脾胃功能",
+      "indications": "寒湿痹阻，腹胀、失眠、消化不良",
+      "technique_points": "先用温水浸湿罐具，缓慢注入冷气，沿腰背方向均匀分布，保持罐体闭合10-12分钟，中途可轻柔移动，观察皮肤反应；每日1次，疗程3-5次",
+      "precautions": "操作前清洁双手，避免接触皮肤破损处；孕妇禁用腰部及腹部部位，避免烫伤；饭后1小时内不宜使用，以免影响消化",
+      "contraindications": "孕妇、有慢性胃炎或消化不良史者慎用；长期受凉者需谨慎操作",
+      "post_treatment_care": "拔罐后3-7天消退，忌剧烈活动，保持局部保暖"
+    }
+  ],
+  "lifestyle_advice": [
+    {
+      "category": "作息调理",
+      "title": "规律作息，养肝护脾",
+      "content": "建立规律的作息时间，早睡早起，保证充足睡眠，避免熬夜伤肝，有利于肝血充盈和肝气疏泄；规律作息符合人体生物钟，有助于脾胃功能恢复",
+      "rationale": "中医认为'人卧血归于肝'，充足睡眠有助于肝血充盈，肝气条达；规律作息符合人体生物钟，有利于脾胃功能恢复",
+      "implementation": "每晚23点前入睡，早晨6-7点起床，中午可小憩30分钟，睡前避免剧烈运动和情绪激动",
+      "frequency": "每日坚持，形成固定的生物钟",
+      "precautions": "睡前2小时避免进食，卧室保持安静舒适，温度适宜",
+      "benefits": "改善睡眠质量，缓解疲劳，调节情绪，增强免疫力，促进肝脾功能恢复"
+    },
+    {
+      "category": "情志调节",
+      "title": "调畅情志，疏肝解郁",
+      "content": "保持心情舒畅，学会情绪管理，通过多种方式释放压力，避免长期情绪抑郁",
+      "rationale": "肝主疏泄，调畅气机，情志不遂则肝气郁结，影响脾胃运化功能",
+      "implementation": "每日进行深呼吸练习，学习冥想放松技巧，培养兴趣爱好，与朋友家人多交流，必要时寻求心理咨询",
+      "frequency": "每日至少进行一次情绪调节活动，压力大时随时进行",
+      "precautions": "避免压抑情绪，学会合理表达，遇到重大压力时及时寻求帮助",
+      "benefits": "缓解焦虑抑郁，改善胸胁胀痛，促进食欲恢复，提高生活质量"
+    },
+    {
+      "category": "运动锻炼",
+      "title": "适度运动，疏肝健脾",
+      "content": "选择适合的运动方式，如散步、太极拳、八段锦等，避免剧烈运动，以微汗为度",
+      "rationale": "适度运动可以疏肝理气，健脾益气，促进气血运行，改善情绪状态",
+      "implementation": "每日散步30-45分钟，每周练习太极拳或八段锦3-4次，选择环境优美的地方运动",
+      "frequency": "每日至少运动30分钟，每周保持5-6天的运动习惯",
+      "precautions": "运动强度要适中，避免过度疲劳，运动后及时补充水分，注意保暖",
+      "benefits": "改善情绪，增强体质，促进消化，缓解胸胁胀痛，提高睡眠质量"
+    },
+    {
+      "category": "环境调适",
+      "title": "优化工作环境，减少职业压力",
+      "content": "改善工作环境，合理安排工作时间，学会工作与生活的平衡",
+      "rationale": "良好的工作环境和合理的工作安排有助于减少压力，避免肝气郁结",
+      "implementation": "每工作1小时起身活动5-10分钟，保持工作环境通风良好，合理安排工作任务，学会说'不'",
+      "frequency": "工作日每小时进行一次短暂休息，每周至少有一天完全放松",
+      "precautions": "避免长时间连续工作，注意用眼卫生，保持正确坐姿",
+      "benefits": "减少工作压力，预防职业病，改善身心健康，提高工作效率"
+    }
+  ],
+  "dietary_advice": [
+    {
+      "category": "宜食",
+      "title": "疏肝健脾食物推荐",
+      "foods_recommended": [
+        "玫瑰花茶",
+        "柠檬",
+        "橘子",
+        "山楂",
+        "白萝卜",
+        "茯苓",
+        "山药",
+        "薏米",
+        "红枣",
+        "莲子",
+        "小米",
+        "南瓜"
+      ],
+      "foods_to_avoid": [],
+      "dietary_principles": "多食用具有疏肝理气、健脾益气功效的食物，选择易消化、营养丰富的食品",
+      "meal_timing": "三餐定时定量，早餐要丰富，晚餐要清淡，避免暴饮暴食",
+      "cooking_methods": "以蒸、煮、炖、煨等温和烹饪方法为主，避免油炸、烧烤等刺激性烹饪",
+      "rationale": "玫瑰花、柠檬等具有疏肝解郁作用；山药、薏米等具有健脾益气功效，有助于改善脾胃功能",
+      "seasonal_adjustment": "春季多食绿色蔬菜，夏季清淡为主，秋季润燥养肺，冬季温补为宜",
+      "precautions": "注意食物新鲜度，避免过期变质食品，根据个人体质调整食量"
+    },
+    {
+      "category": "忌食",
+      "title": "需要避免的食物",
+      "foods_recommended": [],
+      "foods_to_avoid": [
+        "辛辣刺激食物",
+        "油腻食物",
+        "生冷食物",
+        "酒精",
+        "浓茶",
+        "咖啡",
+        "腌制食品",
+        "烧烤食品",
+        "甜腻食物"
+      ],
+      "dietary_principles": "避免刺激性、难消化的食物，减少对肝脾的负担",
+      "meal_timing": "避免深夜进食，餐前不宜大量饮水",
+      "cooking_methods": "避免过度加工的食品，减少添加剂摄入",
+      "rationale": "辛辣刺激食物易伤脾胃，生冷食物损伤脾阳，油腻食物加重脾胃负担，酒精伤肝",
+      "seasonal_adjustment": "夏季尤其要避免生冷食物，冬季减少寒凉食品摄入",
+      "precautions": "如有特殊情况需要食用禁忌食物，应适量并注意观察身体反应"
+    },
+    {
+      "category": "营养搭配",
+      "title": "均衡营养，合理搭配",
+      "foods_recommended": [
+        "优质蛋白质",
+        "复合碳水化合物",
+        "新鲜蔬菜",
+        "时令水果",
+        "坚果类",
+        "深海鱼类"
+      ],
+      "foods_to_avoid": [
+        "精制糖",
+        "反式脂肪",
+        "过度加工食品"
+      ],
+      "dietary_principles": "保证营养均衡，合理搭配蛋白质、碳水化合物、脂肪、维生素和矿物质",
+      "meal_timing": "早餐占全天热量的30%，午餐占40%，晚餐占30%",
+      "cooking_methods": "多样化烹饪方法，保持食物营养价值",
+      "rationale": "均衡营养有助于维持脏腑功能，促进气血生成，增强体质",
+      "seasonal_adjustment": "根据季节变化调整食物搭配，顺应自然规律",
+      "precautions": "注意食物过敏，根据个人消化能力调整食物搭配"
+    }
+  ],
+  "follow_up_advice": [
+    {
+      "follow_up_type": "定期复诊",
+      "title": "治疗效果评估复诊",
+      "timing": "治疗开始后2周进行首次复诊，之后每月复诊一次",
+      "purpose": "评估治疗效果，调整治疗方案，监测病情变化",
+      "monitoring_indicators": [
+        "情绪状态",
+        "胸胁胀痛程度",
+        "食欲变化",
+        "大便性状",
+        "睡眠质量",
+        "舌脉变化"
+      ],
+      "preparation_required": "记录症状变化日记，准备近期的检查报告，整理用药情况",
+      "emergency_conditions": "情绪严重恶化、出现自伤倾向、严重腹痛、持续呕吐",
+      "self_monitoring": "每日记录情绪评分、食欲状况、大便次数和性状、睡眠时间",
+      "contact_information": "如有紧急情况，可拨打医院24小时咨询热线或急诊科电话"
+    },
+    {
+      "follow_up_type": "症状监测",
+      "title": "日常症状自我监测",
+      "timing": "每日进行症状自我评估，每周总结一次",
+      "purpose": "及时发现症状变化，为复诊提供准确信息",
+      "monitoring_indicators": [
+        "情绪波动频率",
+        "胸胁胀痛发作次数",
+        "食欲评分",
+        "腹胀程度",
+        "大便频次",
+        "睡眠质量评分"
+      ],
+      "preparation_required": "准备症状记录表，学会使用评分量表",
+      "emergency_conditions": "症状急剧恶化、出现新的严重症状、药物过敏反应",
+      "self_monitoring": "使用1-10分评分法记录各项症状，注意症状的诱发因素",
+      "contact_information": "症状明显恶化时及时联系主治医生或到医院就诊"
+    },
+    {
+      "follow_up_type": "疗效评估",
+      "title": "治疗疗效综合评估",
+      "timing": "治疗1个月后进行中期评估，3个月后进行全面评估",
+      "purpose": "全面评估治疗效果，决定是否需要调整治疗方案或停药",
+      "monitoring_indicators": [
+        "症状改善程度",
+        "生活质量评分",
+        "工作能力恢复",
+        "药物依赖性",
+        "不良反应发生情况"
+      ],
+      "preparation_required": "完成生活质量量表，整理治疗期间的所有记录",
+      "emergency_conditions": "治疗无效或症状加重、严重不良反应",
+      "self_monitoring": "对比治疗前后的症状变化，评估整体健康状况改善程度",
+      "contact_information": "如对治疗效果有疑问，可预约专家门诊进行详细咨询"
+    },
+    {
+      "follow_up_type": "调整治疗",
+      "title": "个体化治疗方案调整",
+      "timing": "根据治疗反应随时调整，一般每2-4周评估一次",
+      "purpose": "根据个体反应调整药物剂量、更换药物或增加辅助治疗",
+      "monitoring_indicators": [
+        "药物耐受性",
+        "症状改善速度",
+        "副作用发生情况",
+        "患者依从性"
+      ],
+      "preparation_required": "详细记录用药反应，准备相关检查结果",
+      "emergency_conditions": "严重药物不良反应、治疗效果明显不佳",
+      "self_monitoring": "密切观察用药后的身体反应，记录任何异常情况",
+      "contact_information": "需要调整治疗方案时，及时联系主治医生预约门诊"
+    }
+  ]
+}

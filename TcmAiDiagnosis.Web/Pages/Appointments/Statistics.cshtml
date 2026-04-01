@@ -1,0 +1,281 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.Appointments.StatisticsModel
+@{
+    ViewData["Title"] = "预约状态统计";
+}
+
+<h2 class="mb-4">📊 预约状态统计</h2>
+
+@* @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> @Model.ErrorMessage
+        <br />
+        <small>这是演示数据，实际数据需要API服务正常运行。</small>
+    </div>
+} *@
+
+<div class="row">
+    <!-- 图表区域 -->
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">预约状态分布</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="appointmentChart" height="250"></canvas>
+            </div>
+        </div>
+
+        @if (Model.Appointments.Any())
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">医生接诊量</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="doctorChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">预约趋势</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="trendChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- 数据汇总区域 -->
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">数据汇总</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        总预约数
+                        <span class="badge bg-primary rounded-pill">@Model.TotalCount</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        待就诊
+                        <span class="badge bg-warning rounded-pill">@Model.PendingCount</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        已完成
+                        <span class="badge bg-success rounded-pill">@Model.CompletedCount</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        已取消
+                        <span class="badge bg-secondary rounded-pill">@Model.CanceledCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计指标 -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">统计指标</h5>
+            </div>
+            <div class="card-body">
+                @{
+                    var completionRate = Model.TotalCount > 0 ?
+                    Math.Round((double)Model.CompletedCount / Model.TotalCount * 100, 1) : 0;
+                    var cancellationRate = Model.TotalCount > 0 ?
+                    Math.Round((double)Model.CanceledCount / Model.TotalCount * 100, 1) : 0;
+                }
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted">完成率</label>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width: @(completionRate)%"
+                             aria-valuenow="@completionRate" aria-valuemin="0" aria-valuemax="100">
+                            @completionRate%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-muted">取消率</label>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-secondary" role="progressbar"
+                             style="width: @(cancellationRate)%"
+                             aria-valuenow="@cancellationRate" aria-valuemin="0" aria-valuemax="100">
+                            @cancellationRate%
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.Appointments.Any())
+                {
+                    var averageDuration = Model.Appointments.Average(a => a.Duration);
+                    var todayAppointments = Model.Appointments
+                    .Count(a => a.AppointmentTime.Date == DateTime.Today && a.Status == "待就诊");
+
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border rounded p-2">
+                                <div class="h5 mb-1 text-primary">@Math.Round(averageDuration)</div>
+                                <small class="text-muted">平均时长(分钟)</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-2">
+                                <div class="h5 mb-1 text-info">@todayAppointments</div>
+                                <small class="text-muted">今日预约</small>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 刷新按钮 -->
+<div class="mt-4 text-center">
+    <button onclick="location.reload()" class="btn btn-outline-primary">
+        <i class="bi bi-arrow-clockwise"></i> 刷新数据
+    </button>
+    <a asp-page="Index" class="btn btn-secondary ms-2">
+        <i class="bi bi-list-ul"></i> 返回列表
+    </a>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 主图表数据
+        const statusData = {
+            labels: ['待就诊', '已完成', '已取消'],
+            datasets: [{
+                label: '预约数量',
+                data: [@Model.PendingCount, @Model.CompletedCount, @Model.CanceledCount],
+                backgroundColor: [
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(255, 99, 132, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        // 初始化主图表
+        const ctx = document.getElementById('appointmentChart');
+        new Chart(ctx, {
+            type: 'bar',
+            data: statusData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: '预约状态分布'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        @if (Model.Appointments.Any())
+        {
+                // 医生接诊量图表
+                var doctorStats = Model.GetDoctorStatistics();
+                if (doctorStats.Any())
+                {
+                        <text>
+                        const doctorCtx = document.getElementById('doctorChart');
+                        new Chart(doctorCtx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: [@Html.Raw(string.Join(", ", doctorStats.Keys.Select(k => $"'{k}'")))],
+                                datasets: [{
+                                    data: [@string.Join(", ", doctorStats.Values)],
+                                    backgroundColor: [
+                                        'rgba(54, 162, 235, 0.8)',
+                                        'rgba(255, 99, 132, 0.8)',
+                                        'rgba(255, 159, 64, 0.8)',
+                                        'rgba(75, 192, 192, 0.8)',
+                                        'rgba(153, 102, 255, 0.8)'
+                                    ]
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom'
+                                    }
+                                }
+                            }
+                        });
+                        </text>
+                }
+
+                // 预约趋势图表
+                var trendData = Model.GetDailyTrend();
+                if (trendData.Any())
+                {
+                        <text>
+                        const trendCtx = document.getElementById('trendChart');
+                        new Chart(trendCtx, {
+                            type: 'line',
+                            data: {
+                                labels: [@Html.Raw(string.Join(", ", trendData.Keys.Select(k => $"'{k.Substring(5)}'")))],
+                                datasets: [{
+                                    label: '每日预约数',
+                                    data: [@string.Join(", ", trendData.Values)],
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+                        </text>
+                }
+        }
+
+        // 自动刷新数据（可选）
+        setTimeout(() => {
+            if (!document.hidden) {
+                console.log('自动刷新统计数据...');
+                // location.reload();
+            }
+        }, 60000); // 60秒刷新一次
+    </script>
+}

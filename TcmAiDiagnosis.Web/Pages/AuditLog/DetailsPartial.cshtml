@@ -1,0 +1,652 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.AuditLog.DetailsPartialModel
+
+@if (Model.AuditLog == null)
+{
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> 未找到指定的审计日志
+    </div>
+}
+else
+{
+    <div class="audit-log-details">
+        <!-- 高风险操作验证信息 -->
+        @if (Model.AuditLog.RiskScore.HasValue || !string.IsNullOrEmpty(Model.AuditLog.VerificationLevel))
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="card mb-4 border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-shield-alt"></i> 高风险操作验证信息
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- 风险评分 -->
+                                @if (Model.AuditLog.RiskScore.HasValue)
+                                {
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label fw-bold">风险评分</label>
+                                        <div class="border rounded p-3 text-center bg-light">
+                                            <span class="fs-2 fw-bold @GetRiskTextClass(Model.AuditLog.RiskScore.Value)">
+                                                @Model.AuditLog.RiskScore.Value
+                                            </span>
+                                            <div class="mt-1">
+                                                <small class="text-muted">@GetRiskLevelDescription(Model.AuditLog.RiskScore.Value)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- 验证级别 -->
+                                @if (!string.IsNullOrEmpty(Model.AuditLog.VerificationLevel))
+                                {
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label fw-bold">验证级别</label>
+                                        <div class="border rounded p-3 text-center bg-light">
+                                            <span class="badge @GetVerificationLevelBadgeClass(Model.AuditLog.VerificationLevel) fs-6 p-2">
+                                                @GetVerificationLevelDisplayName(Model.AuditLog.VerificationLevel)
+                                            </span>
+                                            <div class="mt-2">
+                                                <small class="text-muted">@GetVerificationDescription(Model.AuditLog.VerificationLevel)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- 审核状态 -->
+                                @if (!string.IsNullOrEmpty(Model.AuditLog.ReviewStatus))
+                                {
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label fw-bold">审核状态</label>
+                                        <div class="border rounded p-3 text-center bg-light">
+                                            <span class="badge @GetReviewStatusBadgeClass(Model.AuditLog.ReviewStatus) fs-6 p-2">
+                                                @GetReviewStatusDisplayName(Model.AuditLog.ReviewStatus)
+                                            </span>
+                                            @if (Model.AuditLog.ReviewedAt.HasValue)
+                                            {
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        @Model.AuditLog.ReviewedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                                                    </small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- 关联业务 -->
+                                @if (!string.IsNullOrEmpty(Model.AuditLog.RelatedEntityType) && Model.AuditLog.RelatedEntityId.HasValue)
+                                {
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label fw-bold">关联业务</label>
+                                        <div class="border rounded p-3 text-center bg-light">
+                                            <span class="fw-bold text-primary">
+                                                @GetRelatedEntityDisplayName(Model.AuditLog.RelatedEntityType)
+                                            </span>
+                                            <div class="mt-1">
+                                                <code class="small">ID: @Model.AuditLog.RelatedEntityId.Value</code>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- 风险描述 -->
+                            @if (!string.IsNullOrEmpty(Model.AuditLog.RiskDescription))
+                            {
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold text-danger">
+                                            <i class="fas fa-exclamation-triangle"></i> 风险描述
+                                        </label>
+                                        <div class="border border-danger rounded p-3 bg-danger bg-opacity-10">
+                                            @Model.AuditLog.RiskDescription
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- 临床理由 -->
+                            @if (!string.IsNullOrEmpty(Model.AuditLog.ClinicalReason))
+                            {
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold text-info">
+                                            <i class="fas fa-sticky-note"></i> 临床理由
+                                        </label>
+                                        <div class="border rounded p-3 bg-info bg-opacity-10">
+                                            <div class="clinical-reason-content">
+                                                @Model.AuditLog.ClinicalReason
+                                            </div>
+                                            @if (Model.AuditLog.ClinicalReason.Length >= 20)
+                                            {
+                                                <div class="mt-2 text-end">
+                                                    <small class="text-muted">
+                                                        字数: @Model.AuditLog.ClinicalReason.Length
+                                                        <i class="fas fa-check-circle text-success ms-1"></i>
+                                                    </small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- 审核信息 -->
+                            @if (!string.IsNullOrEmpty(Model.AuditLog.ReviewStatus) && Model.AuditLog.ReviewStatus != "Pending")
+                            {
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold">审核信息</label>
+                                        <div class="border rounded p-3 bg-light">
+                                            <div class="row">
+                                                @if (Model.AuditLog.Reviewer != null)
+                                                {
+                                                    <div class="col-md-6">
+                                                        <strong>审核人:</strong>
+                                                        <span class="ms-2">
+                                                            <i class="fas fa-user-check"></i>
+                                                            @Model.AuditLog.Reviewer.FullName
+                                                            <small class="text-muted">(ID: @Model.AuditLog.ReviewerId)</small>
+                                                        </span>
+                                                    </div>
+                                                }
+                                                @if (Model.AuditLog.ReviewedAt.HasValue)
+                                                {
+                                                    <div class="col-md-6">
+                                                        <strong>审核时间:</strong>
+                                                        <span class="ms-2">
+                                                            <i class="fas fa-clock"></i>
+                                                            @Model.AuditLog.ReviewedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                                                        </span>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <!-- 修复：ReviewComments 而不是 ReviewComment -->
+                                            @if (!string.IsNullOrEmpty(Model.AuditLog.ReviewComments))
+                                            {
+                                                <div class="row mt-2">
+                                                    <div class="col-12">
+                                                        <strong>审核意见:</strong>
+                                                        <div class="border rounded p-2 mt-1 bg-white">
+                                                            @Model.AuditLog.ReviewComments
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="row">
+            <!-- 基本信息 -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-info-circle"></i> 基本信息
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">操作ID</dt>
+                            <dd class="col-sm-8"><code>@Model.AuditLog.LogId</code></dd>
+
+                            <dt class="col-sm-4">操作时间</dt>
+                            <dd class="col-sm-8">
+                                <i class="fas fa-clock text-muted"></i>
+                                @Model.AuditLog.OperationTime.ToString("yyyy-MM-dd HH:mm:ss")
+                            </dd>
+
+                            <dt class="col-sm-4">操作用户</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.AuditLog.User != null)
+                                {
+                                    <span>
+                                        <i class="fas fa-user"></i>
+                                        @Model.AuditLog.User.FullName
+                                        <small class="text-muted">(ID: @Model.AuditLog.UserId)</small>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        <i class="fas fa-robot"></i>
+                                        系统用户 (ID: @Model.AuditLog.UserId)
+                                    </span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">IP地址</dt>
+                            <dd class="col-sm-8">
+                                <i class="fas fa-globe text-muted"></i>
+                                <code>@Model.AuditLog.IpAddress</code>
+                            </dd>
+
+                            @if (Model.AuditLog.TenantId.HasValue)
+                            {
+                                <dt class="col-sm-4">租户</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.AuditLog.Tenant != null)
+                                    {
+                                        <span class="badge bg-secondary">@Model.AuditLog.Tenant.TenantName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">ID: @Model.AuditLog.TenantId</span>
+                                    }
+                                </dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作信息 -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-cogs"></i> 操作信息
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4">操作模块</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @GetModuleBadgeClass(Model.AuditLog.OperationModule)">
+                                    @GetModuleDisplayName(Model.AuditLog.OperationModule)
+                                </span>
+                            </dd>
+
+                            <dt class="col-sm-4">操作类型</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @GetOperationTypeBadgeClass(Model.AuditLog.OperationType)">
+                                    @GetOperationTypeDisplayName(Model.AuditLog.OperationType)
+                                </span>
+                            </dd>
+
+                            <dt class="col-sm-4">操作状态</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge @(Model.AuditLog.OperationStatus == "Success" ? "bg-success" : "bg-danger")">
+                                    <i class="fas @(Model.AuditLog.OperationStatus == "Success" ? "fa-check" : "fa-times")"></i>
+                                    @GetStatusDisplayName(Model.AuditLog.OperationStatus)
+                                </span>
+                            </dd>
+
+                            <dt class="col-sm-4">执行时长</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.AuditLog.ExecutionDuration.HasValue)
+                                {
+                                    <span class="@(Model.AuditLog.ExecutionDuration > 1000 ? "text-warning fw-bold" : "text-success")">
+                                        <i class="fas fa-stopwatch"></i>
+                                        @Model.AuditLog.ExecutionDuration.Value ms
+                                        @if (Model.AuditLog.ExecutionDuration > 1000)
+                                        {
+                                            <small class="text-muted">(较慢)</small>
+                                        }
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </dd>
+
+                            @if (!string.IsNullOrEmpty(Model.AuditLog.SessionId))
+                            {
+                                <dt class="col-sm-4">会话ID</dt>
+                                <dd class="col-sm-8">
+                                    <code class="small">@Model.AuditLog.SessionId</code>
+                                </dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 详细信息 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h6 class="card-title mb-0">
+                            <i class="fas fa-file-alt"></i> 详细信息
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">操作详情</label>
+                            <div class="border rounded p-3 bg-light">
+                                <i class="fas fa-sticky-note text-muted me-2"></i>
+                                @Model.AuditLog.OperationDetails
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.AuditLog.RequestPath))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-route text-muted me-2"></i>请求路径
+                                </label>
+                                <div class="border rounded p-2 font-monospace small">
+                                    @Model.AuditLog.RequestPath
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.AuditLog.RequestParameters))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-code text-muted me-2"></i>请求参数
+                                </label>
+                                <div class="border rounded p-2 font-monospace small bg-dark text-light">
+                                    <pre class="mb-0">@Model.AuditLog.RequestParameters</pre>
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.AuditLog.BeforeSnapshot))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-info">
+                                    <i class="fas fa-database text-muted me-2"></i>变更前数据
+                                </label>
+                                <div class="border rounded p-2 font-monospace small bg-light">
+                                    <pre class="mb-0">@Model.AuditLog.BeforeSnapshot</pre>
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.AuditLog.AfterSnapshot))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-success">
+                                    <i class="fas fa-database text-muted me-2"></i>变更后数据
+                                </label>
+                                <div class="border rounded p-2 font-monospace small bg-light">
+                                    <pre class="mb-0">@Model.AuditLog.AfterSnapshot</pre>
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.AuditLog.UserAgent))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-desktop text-muted me-2"></i>用户代理
+                                </label>
+                                <div class="border rounded p-2 font-monospace small">
+                                    @Model.AuditLog.UserAgent
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.AuditLog.ErrorMessage))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-danger">
+                                    <i class="fas fa-exclamation-triangle text-muted me-2"></i>错误信息
+                                </label>
+                                <div class="border border-danger rounded p-3 bg-danger bg-opacity-10">
+                                    <pre class="mb-0 text-danger">@Model.AuditLog.ErrorMessage</pre>
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.AuditLog.Remarks))
+                        {
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-comment text-muted me-2"></i>备注
+                                </label>
+                                <div class="border rounded p-3 bg-light">
+                                    @Model.AuditLog.Remarks
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@functions {
+    // 模块相关方法
+    string GetModuleDisplayName(string module)
+    {
+        return module switch
+        {
+            "Appointment" => "🏥 预约管理",
+            "Herb" => "🌿 药材管理",
+            "Inventory" => "📦 库存管理",
+            "User" => "👤 用户管理",
+            "System" => "⚙️ 系统管理",
+            "AuditLog" => "📋 审计日志",
+            "Treatment" => "🏥 诊疗业务",
+            "Prescription" => "💊 处方管理",
+            "Patient" => "👨‍⚕️ 患者管理",
+            "MedicalRecord" => "📄 病历管理",
+            "AI" => "🤖 AI辅助诊断",
+            _ => module
+        };
+    }
+
+    string GetModuleBadgeClass(string module)
+    {
+        return module switch
+        {
+            "Appointment" => "bg-primary",
+            "Herb" => "bg-success",
+            "Inventory" => "bg-warning",
+            "User" => "bg-info",
+            "System" => "bg-secondary",
+            "AuditLog" => "bg-dark",
+            "Treatment" => "bg-danger",
+            "Prescription" => "bg-warning",
+            "Patient" => "bg-primary",
+            "MedicalRecord" => "bg-info",
+            "AI" => "bg-purple",
+            _ => "bg-secondary"
+        };
+    }
+
+    // 操作类型相关方法
+    string GetOperationTypeDisplayName(string operationType)
+    {
+        return operationType switch
+        {
+            "Create" => "➕ 新增",
+            "Update" => "✏️ 修改",
+            "Delete" => "🗑️ 删除",
+            "View" => "👁️ 查看",
+            "Search" => "🔍 搜索",
+            "Export" => "📤 导出",
+            "Login" => "🔑 登录",
+            "Logout" => "🚪 登出",
+            "Verify" => "🛡️ 验证",
+            "Approve" => "✅ 批准",
+            "Reject" => "❌ 拒绝",
+            _ => operationType
+        };
+    }
+
+    string GetOperationTypeBadgeClass(string operationType)
+    {
+        return operationType switch
+        {
+            "Create" => "bg-info",
+            "Update" => "bg-warning",
+            "Delete" => "bg-danger",
+            "View" => "bg-secondary",
+            "Search" => "bg-primary",
+            "Export" => "bg-success",
+            "Login" => "bg-dark",
+            "Logout" => "bg-secondary",
+            "Verify" => "bg-warning",
+            "Approve" => "bg-success",
+            "Reject" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    // 状态相关方法
+    string GetStatusDisplayName(string status)
+    {
+        return status switch
+        {
+            "Success" => "成功",
+            "Failed" => "失败",
+            "Pending" => "进行中",
+            _ => status
+        };
+    }
+
+    // 高风险操作相关方法
+    string GetRiskDisplayName(int riskScore)
+    {
+        return riskScore switch
+        {
+            <= 4 => "🟢 低风险",
+            <= 6 => "🟡 中风险",
+            <= 9 => "🔴 高风险",
+            _ => "⚫ 极高风险"
+        };
+    }
+
+    string GetRiskBadgeClass(int riskScore)
+    {
+        return riskScore switch
+        {
+            <= 4 => "bg-success",
+            <= 6 => "bg-warning",
+            <= 9 => "bg-danger",
+            _ => "bg-dark"
+        };
+    }
+
+    string GetRiskTextClass(int riskScore)
+    {
+        return riskScore switch
+        {
+            <= 4 => "text-success",
+            <= 6 => "text-warning",
+            <= 9 => "text-danger",
+            _ => "text-dark"
+        };
+    }
+
+    string GetRiskLevelDescription(int riskScore)
+    {
+        return riskScore switch
+        {
+            <= 4 => "一级验证(自动通过)",
+            <= 6 => "二级验证(确认对话框)",
+            <= 9 => "三级验证(密码验证)",
+            _ => "四级验证(人工审核)"
+        };
+    }
+
+    // 验证级别相关方法
+    string GetVerificationLevelDisplayName(string level)
+    {
+        return level switch
+        {
+            "Level1" => "① 一级验证",
+            "Level2" => "② 二级验证",
+            "Level3" => "③ 三级验证",
+            "Level4" => "④ 四级验证",
+            _ => level
+        };
+    }
+
+    string GetVerificationLevelBadgeClass(string level)
+    {
+        return level switch
+        {
+            "Level1" => "bg-success",
+            "Level2" => "bg-info",
+            "Level3" => "bg-warning",
+            "Level4" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetVerificationDescription(string level)
+    {
+        return level switch
+        {
+            "Level1" => "自动通过，仅记录",
+            "Level2" => "确认对话框，可跳过",
+            "Level3" => "密码验证+临床理由",
+            "Level4" => "人工审核流程",
+            _ => "无需验证"
+        };
+    }
+
+    // 审核状态相关方法
+    string GetReviewStatusDisplayName(string status)
+    {
+        return status switch
+        {
+            "Pending" => "⏳ 待审核",
+            "Approved" => "✅ 已批准",
+            "Rejected" => "❌ 已拒绝",
+            _ => status
+        };
+    }
+
+    string GetReviewStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "bg-warning",
+            "Approved" => "bg-success",
+            "Rejected" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    // 关联业务类型方法
+    string GetRelatedEntityDisplayName(string entityType)
+    {
+        return entityType switch
+        {
+            "TreatmentPlan" => "治疗方案",
+            "Prescription" => "处方",
+            "MedicalRecord" => "病历",
+            "Patient" => "患者档案",
+            "Herb" => "药材信息",
+            "Inventory" => "库存记录",
+            _ => entityType
+        };
+    }
+}
+
+<style>
+    .clinical-reason-content {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        line-height: 1.5;
+    }
+
+    .bg-purple {
+        background-color: #6f42c1 !important;
+    }
+
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+</style>

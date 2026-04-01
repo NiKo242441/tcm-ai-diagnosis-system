@@ -1,0 +1,320 @@
+﻿
+@@media print {
+    /* 隐藏不相关元素 */
+    body > *:not(.main-wrapper):not(.footer) {
+        display: none !important;
+    }
+
+    .main-wrapper > .header,
+    .main-wrapper > .sidebar,
+    .main-wrapper > .section > .container-fluid > .title-wrapper {
+        display: none !important;
+    }
+    /* 确保主内容区域的显示和边距 */
+    .section {
+        page-break-after: auto !important; /* 重置为默认行为 */
+        break-after: auto; /* 重置为默认行为 */
+    }
+    /* 隐藏非活跃的标签页内容，只显示活跃的 */
+    .tab-pane:not(.active) {
+        display: none !important;
+    }
+
+    .tab-pane.active {
+        display: block !important;
+    }
+    /* 隐藏主体的边框，去除阴影，并调整卡片样式 */
+    body, .container, .container-fluid, .card, .tab-content, .food-therapy-item, .card-style {
+        border: none !important;
+        box-shadow: none !important;
+        margin-bottom: 0 !important;
+    }
+    /* 将并列两行显示的内容切换为单行显示 */
+    .row {
+        display: block !important;
+    }
+
+    .col,
+    .col-l, .col-2, .col-3, .col-4, .col-5, .col-6,
+    .col-7, .col-8, .col-9, .col-10, .col-l1, .col-l2,
+    .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6,
+    .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12,
+    .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6,
+    .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
+    .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6,
+    .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+        flex: none !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        float: none !important;
+        /* 避免列在中间分页 */
+        page-break-inside: avoid !important;
+    }
+    /* 去除所有标签背景 */
+    body, html,
+    .card, .card-header, .card-body,
+    .nav-tabs, .nav-item, .nav-link,
+    .tab-content, .food-therapy-item,
+    div, section, article, header, footer, aside {
+        background-color: transparent !important;
+        background: none !important;
+    }
+    /* 统一使用黑色字体 */
+    body,
+    .card, .card-header, .card-body,
+    .nav-tabs, .nav-item, .nav-link,
+    .tab-content, .food-therapy-item,
+    h1, h2, h3, h4, h5, h6, p, span, div, li, a {
+        color: #000 !important;
+    }
+    /* 移除链接下划线 */
+    a {
+        text-decoration: none !important;
+    }
+    /* 确保内容适配A4纸张，并添加打印边距 */
+    body {
+        width: 210mm; /* A4宽度 */
+        margin: 0 auto;
+        padding: 0mm !important; /* 顶部和左右边距 */
+        /* !!! 关键：为固定页脚预留空间，请根据实际页脚高度调整这个值 !!! */
+        padding-bottom: 0mm !important; /* 假设页脚高15mm，留25mm防止重叠，可根据实际调整 */
+        font-size: 12pt;
+        color: #000;
+    }
+    /* 针对页面中的 tab 导航按钮 */
+    .nav-tabs .nav-link:not(.active) {
+        display: none !important; /* 隐藏所有非活跃的 nav-link 按钮 */
+    }
+
+    .nav-tabs .nav-link.active { /* 确保活跃的 nav-link 按钮看起来像纯文本 */
+        display: inline !important; /* 确保它显示为行内元素 */
+        padding: 0 !important; /* 移除内边距 */
+        margin: 0 !important; /* 移除外边距 */
+        border: none !important; /* 移除边框 */
+        background-color: transparent !important; /* 移除背景 */
+        color: #000 !important; /* 确保字体颜色为黑色 */
+        text-decoration: none !important; /* 移除下划线 */
+        cursor: default !important; /* 改变鼠标样式 */
+    }
+    /* 确保 nav-tabs 容器本身没有边框或背景 */
+    .nav-tabs {
+        border: none !important;
+        background: none !important;
+    }
+        /* 隐藏非活跃的 nav-item（li 元素），仅当其子元素没有 .nav-link.active 时 */
+        /* 注意：:has() 伪类在某些旧浏览器或打印引擎中可能不支持，若遇到问题，可考虑移除此规则 */
+        .nav-tabs .nav-item:not(:has(.nav-link.active)) {
+            display: none !important;
+        }
+    /* 确保 食疗药膳 标题可见并正确显示 */
+    .section-title-container {
+        display: block !important;
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    .section-title {
+        display: block !important;
+        color: #000 !important;
+    }
+    /* 隐藏打印按钮和AI处方单按钮 */
+    /* 针对可能包含按钮的特定容器 */
+    .d-flex.justify-content-between.align-items-center.mb-4 button,
+    /* 隐藏所有具有 .btn 类的按钮以及 button 标签本身 */
+    button, .btn {
+        display: none !important;
+    }
+    /* 尽量避免分页从正文中间切断内容 */
+    /* 防止内部元素断裂，应用于常见的内容块和列表元素 */
+    h1, h2, h3, h4, h5, h6,
+    p, ul, ol, li,
+    .card, .tab-content, .food-therapy-item {
+        page-break-inside: avoid !important;
+    }
+    /* 避免在标题后立即分页 */
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid !important;
+    }
+    /* 允许子列表适当地分页 */
+    ul ul {
+        page-break-inside: auto !important;
+    }
+    /* ========== 页脚样式：设置为固定位置以在每页重复 ========== */
+    .footer {
+        position: fixed !important; /* 关键：固定位置，使其在每页重复 */
+        bottom: 0 !important; /* 位于页面底部 */
+        left: 0 !important; /* 从左侧开始 */
+        width: 100% !important; /* 宽度占据整页 */
+        text-align: center !important;
+        background-color: transparent !important; /* 确保背景透明 */
+        border-top: none !important;
+        padding: 1rem 0 !important; /* 保持页脚内边距 */
+        color: #000 !important;
+        /* 移除所有 page-break 相关规则，因为固定定位的元素不参与正常流的分页 */
+        page-break-inside: auto !important;
+        page-break-before: auto !important;
+        break-before: auto;
+    }
+        /* 确保页脚内部结构在固定定位下仍然正确显示 */
+        .footer .container-fluid {
+            /* 在固定定位下，page-break-inside可能不再有严格意义，但保留以防万一 */
+            page-break-inside: avoid !important;
+            /* 为了在固定定位下居中和限制宽度，可以设置最大宽度和自动边距 */
+            max-width: 210mm !important; /* 限制为A4宽度，根据实际内容调整 */
+            margin: 0 auto !important; /* 居中 */
+        }
+
+        .footer .row {
+            /* 强制为flex布局以保持左右两列，并确保不换行 */
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            page-break-inside: avoid !important; /* 确保row内容不被分割 */
+        }
+
+        .footer .col-md-6 {
+            flex: 1 !important;
+            max-width: 50% !important;
+            width: 50% !important;
+            text-align: initial !important; /* 保持原有的文本对齐方式 */
+            page-break-inside: avoid !important; /* 确保col内容不被分割 */
+        }
+
+        .footer .copyright {
+            page-break-inside: avoid !important;
+        }
+
+        .footer .nav {
+            display: none !important; /* 隐藏页脚中的导航链接 */
+        }
+}
+
+/* 通用卡片样式 */
+.detail-card {
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+    /* 段落行距 */
+    .detail-card p {
+        line-height: 1.8;
+    }
+
+/* 标签样式 */
+.badge {
+    padding: 0.35em 0.65em;
+    border-radius: 0.375rem;
+    font-size: 0.75em;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+    display: inline-block;
+}
+
+
+/* 放大标题 */
+h3 {
+    font-size: 1.75rem; /* 增大证候概览和证候详情的标题 */
+}
+
+.section-title {
+    color: #0d6efd; /* 标题颜色 */
+    font-size: 1.5rem; /* 标题字体大小 */
+}
+
+.section-title-container {
+    border-bottom: 2px solid #e9ecef; /* 底部边框 */
+    padding-bottom: 0.5rem; /* 底部内边距 */
+    margin-bottom: 1.5rem; /* 底部外边距 */
+}
+
+    .section-title-container .nav-tabs {
+        border: 0;
+    }
+
+
+/* 列表样式 */
+ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+    ul li {
+        margin-bottom: 0.5rem;
+        line-height: 1.6;
+    }
+
+/* 表格样式 */
+.table-responsive {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+    border-collapse: collapse;
+}
+
+    .table th,
+    .table td {
+        padding: 0.75rem;
+        vertical-align: top;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .table thead th {
+        vertical-align: bottom;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+.table-bordered {
+    border: 1px solid #dee2e6;
+}
+
+    .table-bordered th,
+    .table-bordered td {
+        border: 1px solid #dee2e6;
+    }
+
+.table-sm th,
+.table-sm td {
+    padding: 0.3rem;
+}
+
+/* Tabs 样式调整 */
+.nav-tabs .nav-link {
+    color: #0d6efd; /* Tab 标题颜色 */
+    border: 1px solid transparent;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+}
+
+    .nav-tabs .nav-link.active {
+        color: #495057;
+        background-color: #fff;
+        border-color: #dee2e6 #dee2e6 #fff;
+    }
+
+.tab-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    padding: 1.5rem;
+    border-bottom-left-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+}
+
+/* 食疗药膳项样式 */
+.food-therapy-item {
+    background-color: #f8f9fa; /* 浅灰色背景 */
+    border: 1px solid #e9ecef; /* 浅边框 */
+    margin-bottom: 1rem; /* 底部间距 */
+    padding: 1rem; /* 内边距 */
+    border-radius: 0.5rem; /* 圆角 */
+}
+
+    .food-therapy-item h5 {
+        color: #0d6efd; /* 食疗名称颜色 */
+        margin-bottom: 0.75rem;
+    }

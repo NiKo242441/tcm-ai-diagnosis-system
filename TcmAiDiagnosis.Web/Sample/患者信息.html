@@ -1,0 +1,750 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>患者信息管理</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: "#4f46e5", secondary: "#6366f1" },
+                    borderRadius: {
+                        none: "0px",
+                        sm: "4px",
+                        DEFAULT: "8px",
+                        md: "12px",
+                        lg: "16px",
+                        xl: "20px",
+                        "2xl": "24px",
+                        "3xl": "32px",
+                        full: "9999px",
+                        button: "8px",
+                    },
+                },
+            },
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap"
+          rel="stylesheet" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css" />
+    <style>
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        body {
+            font-family: "Noto Sans SC", sans-serif;
+            background-color: #f9fafb;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            background: transparent;
+            color: transparent;
+            cursor: pointer;
+            height: 100%;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 100%;
+        }
+
+        .custom-radio {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .custom-radio-input {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            margin-right: 8px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+            .custom-radio-input:checked {
+                border-color: #4f46e5;
+                background-color: #4f46e5;
+            }
+
+                .custom-radio-input:checked::after {
+                    content: "";
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background-color: white;
+                }
+
+        .tab-active {
+            color: #4f46e5;
+            border-bottom: 2px solid #4f46e5;
+        }
+
+        .tab-inactive {
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+        <!-- 顶部导航栏 -->
+        <header class="bg-white shadow-sm">
+            <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-['Pacifico'] text-primary mr-8">logo</h1>
+                    <nav class="hidden md:flex space-x-1">
+                        <a href="#" class="px-4 py-2 tab-active font-medium">患者信息</a>
+                        <a href="https://readdy.ai/home/d0e22de4-0976-4447-95ff-6109d269844b/ce7c626e-2f3e-493f-80c9-8cdd04f25cee"
+                           data-readdy="true"
+                           class="px-4 py-2 tab-inactive font-medium">就诊记录</a>
+                        <a href="#" class="px-4 py-2 tab-inactive font-medium">AI 智能分析</a>
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative w-10 h-10 flex items-center justify-center rounded-full bg-gray-100">
+                        <i class="ri-user-line text-gray-600 ri-lg"></i>
+                    </div>
+                    <span class="hidden md:inline-block font-medium">王医生</span>
+                </div>
+            </div>
+        </header>
+        <main class="flex-grow container mx-auto px-4 py-6">
+            <!-- 搜索区域 -->
+            <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex-grow max-w-xl">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                                <i class="ri-search-line"></i>
+                            </div>
+                        </div>
+                        <input type="text"
+                               id="patient-search"
+                               placeholder="输入患者手机号查询"
+                               class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-button bg-white text-sm text-gray-900" />
+                        <button id="search-button"
+                                class="absolute inset-y-0 right-0 px-4 py-2 bg-primary text-white rounded-r-button !rounded-button whitespace-nowrap">
+                            查询
+                        </button>
+                    </div>
+                </div>
+                <button id="new-patient-btn"
+                        class="px-4 py-2.5 bg-white border border-gray-300 rounded-button text-gray-700 shadow-sm hover:bg-gray-50 !rounded-button whitespace-nowrap flex items-center justify-center">
+                    <div class="w-5 h-5 flex items-center justify-center mr-1.5">
+                        <i class="ri-add-line"></i>
+                    </div>
+                    新建患者
+                </button>
+            </div>
+            <!-- 活动就诊记录卡片 (默认隐藏) -->
+            <div id="active-visit-card"
+                 class="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 p-4 hidden">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">就诊信息</h3>
+                        <p class="mt-1 text-base font-medium">
+                            主诉：<span class="text-gray-900">头痛、失眠 3 天</span>
+                        </p>
+                        <div class="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-500">
+                            <p>就诊时间：2025-07-05</p>
+                            <p>下次复诊：2025-07-12</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="button"
+                                id="end-visit-btn"
+                                class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded-button text-sm !rounded-button whitespace-nowrap hover:bg-gray-50">
+                            结束就诊
+                        </button>
+                        <button type="button"
+                                id="continue-visit-btn"
+                                class="px-3 py-1.5 bg-primary/10 text-primary rounded-button text-sm !rounded-button whitespace-nowrap hover:bg-primary/20">
+                            继续就诊
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="no-visit-card"
+                 class="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 p-4 hidden">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">就诊信息</h3>
+                        <p class="mt-1 text-sm text-gray-500">暂无进行中的就诊记录</p>
+                    </div>
+                    <button type="button"
+                            id="new-visit-btn"
+                            class="px-3 py-1.5 bg-primary text-white rounded-button text-sm !rounded-button whitespace-nowrap hover:bg-primary/90">
+                        开始问诊
+                    </button>
+                </div>
+            </div>
+            <!-- 患者信息表单 -->
+            <form id="patient-form">
+                <!-- 基础信息卡片 -->
+                <div class="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h2 class="text-lg font-medium text-gray-900">基础信息</h2>
+                        <div class="w-6 h-6 flex items-center justify-center text-gray-400 cursor-pointer"
+                             id="toggle-basic-info">
+                            <i class="ri-arrow-up-s-line"></i>
+                        </div>
+                    </div>
+                    <div class="p-6" id="basic-info-content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label for="fullName"
+                                       class="block text-sm font-medium text-gray-700 mb-1">姓名 <span class="text-red-500">*</span></label>
+                                <input type="text"
+                                       id="fullName"
+                                       name="fullName"
+                                       required
+                                       class="w-full px-3 py-2 border border-gray-300 rounded text-sm" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">性别 <span class="text-red-500">*</span></label>
+                                <div class="flex space-x-6 mt-1">
+                                    <label class="custom-radio">
+                                        <input type="radio"
+                                               name="gender"
+                                               value="male"
+                                               class="custom-radio-input"
+                                               checked />
+                                        <span>男</span>
+                                    </label>
+                                    <label class="custom-radio">
+                                        <input type="radio"
+                                               name="gender"
+                                               value="female"
+                                               class="custom-radio-input" />
+                                        <span>女</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="dateOfBirth"
+                                       class="block text-sm font-medium text-gray-700 mb-1">出生日期 <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <input type="date"
+                                           id="dateOfBirth"
+                                           name="dateOfBirth"
+                                           required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded text-sm" />
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <div class="w-5 h-5 flex items-center justify-center text-gray-400">
+                                            <i class="ri-calendar-line"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="idCardNumber"
+                                       class="block text-sm font-medium text-gray-700 mb-1">身份证号</label>
+                                <input type="text"
+                                       id="idCardNumber"
+                                       name="idCardNumber"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded text-sm" />
+                            </div>
+                            <div>
+                                <label for="phoneNumber"
+                                       class="block text-sm font-medium text-gray-700 mb-1">联系电话 <span class="text-red-500">*</span></label>
+                                <input type="tel"
+                                       id="phoneNumber"
+                                       name="phoneNumber"
+                                       required
+                                       class="w-full px-3 py-2 border border-gray-300 rounded text-sm" />
+                            </div>
+                            <div>
+                                <label for="homeAddress"
+                                       class="block text-sm font-medium text-gray-700 mb-1">家庭住址</label>
+                                <input type="text"
+                                       id="homeAddress"
+                                       name="homeAddress"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded text-sm" />
+                            </div>
+                            <div class="lg:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">紧急联系人</label>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <input type="text"
+                                           id="emergencyContactName"
+                                           name="emergencyContactName"
+                                           placeholder="姓名"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded text-sm" />
+                                    <input type="tel"
+                                           id="emergencyContactPhone"
+                                           name="emergencyContactPhone"
+                                           placeholder="电话"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded text-sm" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 病史信息卡片 -->
+                <div class="mb-6 bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h2 class="text-lg font-medium text-gray-900">病史信息</h2>
+                        <div class="w-6 h-6 flex items-center justify-center text-gray-400 cursor-pointer"
+                             id="toggle-medical-history">
+                            <i class="ri-arrow-up-s-line"></i>
+                        </div>
+                    </div>
+                    <div class="p-6" id="medical-history-content">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label for="pastMedicalHistory"
+                                       class="block text-sm font-medium text-gray-700 mb-1">既往病史</label>
+                                <textarea id="pastMedicalHistory"
+                                          name="pastMedicalHistory"
+                                          rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded text-sm"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">慢性病史</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="chronicDiseases"
+                                               value="hypertension"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">高血压</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="chronicDiseases"
+                                               value="diabetes"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">糖尿病</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="chronicDiseases"
+                                               value="heartDisease"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">心脏病</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="chronicDiseases"
+                                               value="other"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">其他</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">过敏史</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="allergies"
+                                               value="penicillin"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">青霉素</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="allergies"
+                                               value="sulfa"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">磺胺类</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="allergies"
+                                               value="iodine"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">碘造影剂</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="allergies"
+                                               value="other"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">其他</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">家族病史</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="familyHistory"
+                                               value="hypertension"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">高血压</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="familyHistory"
+                                               value="diabetes"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">糖尿病</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="familyHistory"
+                                               value="cancer"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">恶性肿瘤</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="familyHistory"
+                                               value="other"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">其他</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">传染病史</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="infectiousHistory"
+                                               value="hepatitis"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">肝炎</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="infectiousHistory"
+                                               value="tuberculosis"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">结核病</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="infectiousHistory"
+                                               value="covid19"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">新冠肺炎</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox"
+                                               name="infectiousHistory"
+                                               value="other"
+                                               class="rounded border-gray-300 text-primary" />
+                                        <span class="text-sm">其他</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="otherNotes"
+                                       class="block text-sm font-medium text-gray-700 mb-1">其他备注信息</label>
+                                <textarea id="otherNotes"
+                                          name="otherNotes"
+                                          rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded text-sm"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 底部操作栏 -->
+                <div class="flex flex-col sm:flex-row justify-end gap-3 mt-8">
+                    <button type="button"
+                            id="cancel-btn"
+                            class="px-5 py-2.5 bg-white border border-gray-300 rounded-button text-gray-700 shadow-sm hover:bg-gray-50 !rounded-button whitespace-nowrap">
+                        取消
+                    </button>
+                    <button type="button"
+                            id="save-btn"
+                            class="px-5 py-2.5 bg-white border border-primary text-primary rounded-button shadow-sm hover:bg-primary/5 !rounded-button whitespace-nowrap">
+                        保存患者信息
+                    </button>
+                    <button type="button"
+                            id="visit-history-btn"
+                            class="px-5 py-2.5 bg-white border border-primary text-primary rounded-button shadow-sm hover:bg-primary/5 !rounded-button whitespace-nowrap flex items-center gap-1.5">
+                        <i class="ri-file-list-line"></i>
+                        就诊记录
+                    </button>
+                    <button type="button"
+                            id="start-visit-btn"
+                            class="px-5 py-2.5 bg-primary text-white rounded-button shadow-sm hover:bg-primary/90 !rounded-button whitespace-nowrap"
+                            disabled>
+                        开始就诊
+                    </button>
+                </div>
+            </form>
+        </main>
+        <footer class="bg-white border-t border-gray-200 py-6">
+            <div class="container mx-auto px-4 text-center text-sm text-gray-500">
+                © 2025 中医智能辅助诊疗系统. 保留所有权利.
+            </div>
+        </footer>
+    </div>
+    <script id="search-functionality">
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchButton = document.getElementById("search-button");
+            const patientSearch = document.getElementById("patient-search");
+            const activeVisitCard = document.getElementById("active-visit-card");
+            const noVisitCard = document.getElementById("no-visit-card");
+            const endVisitBtn = document.getElementById("end-visit-btn");
+            const continueVisitBtn = document.getElementById("continue-visit-btn");
+            const newVisitBtn = document.getElementById("new-visit-btn");
+            endVisitBtn.addEventListener("click", function () {
+                if (confirm("确定要结束当前就诊吗？")) {
+                    activeVisitCard.classList.add("hidden");
+                    noVisitCard.classList.remove("hidden");
+                }
+            });
+            continueVisitBtn.addEventListener("click", function () {
+                window.location.href = "#"; // 跳转到就诊页面
+            });
+            newVisitBtn.addEventListener("click", function () {
+                window.location.href = "#"; // 跳转到新建就诊页面
+            });
+            const patientForm = document.getElementById("patient-form");
+            const newPatientBtn = document.getElementById("new-patient-btn");
+            // 模拟搜索功能
+            searchButton.addEventListener("click", function () {
+                const searchValue = patientSearch.value.trim();
+                if (searchValue) {
+                    // 模拟API调用
+                    setTimeout(() => {
+                        // 随机决定是否找到患者
+                        const foundPatient = Math.random() > 0.5;
+                        if (foundPatient) {
+                            // 找到患者，填充表单
+                            fillPatientForm({
+                                fullName: "陈志明",
+                                gender: "male",
+                                dateOfBirth: "1985-03-15",
+                                idCardNumber: "330102198503153456",
+                                phoneNumber: searchValue,
+                                homeAddress: "浙江省杭州市西湖区文三路123号",
+                                pastMedicalHistory:
+                                    "2020年确诊高血压，长期服用降压药物。2018年曾做过胆囊切除手术。",
+                                allergyHistory: "对青霉素过敏，会出现皮疹。",
+                                emergencyContactName: "陈小红",
+                                emergencyContactPhone: "13987654321",
+                                familyHistory: "父亲有糖尿病史，母亲健康。",
+                                otherNotes:
+                                    "平时作息不规律，经常熬夜工作。喜欢喝咖啡，每天约2-3杯。",
+                            });
+                            // 随机决定是否有活动就诊记录
+                            if (Math.random() > 0.5) {
+                                activeVisitCard.classList.remove("hidden");
+                                noVisitCard.classList.add("hidden");
+                            } else {
+                                activeVisitCard.classList.add("hidden");
+                                noVisitCard.classList.remove("hidden");
+                            }
+                            document.getElementById("save-btn").textContent = "更新患者信息";
+                            document.getElementById("start-visit-btn").disabled = false;
+                        } else {
+                            // 未找到患者，清空表单
+                            resetPatientForm();
+                            activeVisitCard.classList.add("hidden");
+                            alert("未找到该患者信息，请创建新患者。");
+                        }
+                    }, 500);
+                }
+            });
+            // 新建患者按钮
+            newPatientBtn.addEventListener("click", function () {
+                resetPatientForm();
+                activeVisitCard.classList.add("hidden");
+                document.getElementById("save-btn").textContent = "保存患者信息";
+                document.getElementById("phoneNumber").value = patientSearch.value.trim();
+            });
+            // 填充患者表单
+            function fillPatientForm(patient) {
+                document.getElementById("fullName").value = patient.fullName || "";
+                document.querySelectorAll('input[name="gender"]').forEach((radio) => {
+                    radio.checked = radio.value === patient.gender;
+                });
+                document.getElementById("dateOfBirth").value = patient.dateOfBirth || "";
+                document.getElementById("idCardNumber").value = patient.idCardNumber || "";
+                document.getElementById("phoneNumber").value = patient.phoneNumber || "";
+                document.getElementById("homeAddress").value = patient.homeAddress || "";
+                document.getElementById("pastMedicalHistory").value =
+                    patient.pastMedicalHistory || "";
+                document.getElementById("allergyHistory").value =
+                    patient.allergyHistory || "";
+                document.getElementById("emergencyContactName").value =
+                    patient.emergencyContactName || "";
+                document.getElementById("emergencyContactPhone").value =
+                    patient.emergencyContactPhone || "";
+                document.getElementById("familyHistory").value =
+                    patient.familyHistory || "";
+                document.getElementById("otherNotes").value = patient.otherNotes || "";
+            }
+            // 重置患者表单
+            function resetPatientForm() {
+                patientForm.reset();
+                document.getElementById("start-visit-btn").disabled = true;
+            }
+        });
+    </script>
+    <script id="form-interactions">
+        document.addEventListener("DOMContentLoaded", function () {
+            // 表单区域折叠/展开功能
+            const toggleBasicInfo = document.getElementById("toggle-basic-info");
+            const basicInfoContent = document.getElementById("basic-info-content");
+            const toggleMedicalHistory = document.getElementById(
+                "toggle-medical-history",
+            );
+            const medicalHistoryContent = document.getElementById(
+                "medical-history-content",
+            );
+            toggleBasicInfo.addEventListener("click", function () {
+                basicInfoContent.classList.toggle("hidden");
+                toggleIcon(toggleBasicInfo);
+            });
+            toggleMedicalHistory.addEventListener("click", function () {
+                medicalHistoryContent.classList.toggle("hidden");
+                toggleIcon(toggleMedicalHistory);
+            });
+            function toggleIcon(element) {
+                const icon = element.querySelector("i");
+                if (icon.classList.contains("ri-arrow-up-s-line")) {
+                    icon.classList.remove("ri-arrow-up-s-line");
+                    icon.classList.add("ri-arrow-down-s-line");
+                } else {
+                    icon.classList.remove("ri-arrow-down-s-line");
+                    icon.classList.add("ri-arrow-up-s-line");
+                }
+            }
+            // 保存按钮功能
+            const saveBtn = document.getElementById("save-btn");
+            const startVisitBtn = document.getElementById("start-visit-btn");
+            saveBtn.addEventListener("click", function () {
+                const form = document.getElementById("patient-form");
+                const requiredFields = form.querySelectorAll("[required]");
+                let isValid = true;
+                requiredFields.forEach((field) => {
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.classList.add("border-red-500");
+                    } else {
+                        field.classList.remove("border-red-500");
+                    }
+                });
+                if (isValid) {
+                    // 模拟保存成功
+                    setTimeout(() => {
+                        alert("患者信息保存成功！");
+                        startVisitBtn.disabled = false;
+                    }, 500);
+                } else {
+                    alert("请填写所有必填字段！");
+                }
+            });
+            // 开始就诊按钮功能
+            startVisitBtn.addEventListener("click", function () {
+                // 模拟跳转到就诊记录页面
+                alert("即将跳转到就诊记录页面...");
+            });
+            // 就诊记录按钮功能
+            const visitHistoryBtn = document.getElementById("visit-history-btn");
+            visitHistoryBtn.addEventListener("click", function () {
+                window.location.href =
+                    "https://readdy.ai/home/d0e22de4-0976-4447-95ff-6109d269844b/ce7c626e-2f3e-493f-80c9-8cdd04f25cee";
+            });
+            // 取消按钮功能
+            const cancelBtn = document.getElementById("cancel-btn");
+            cancelBtn.addEventListener("click", function () {
+                if (confirm("确定要取消编辑吗？未保存的内容将丢失。")) {
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+    <script id="form-validation">
+        document.addEventListener("DOMContentLoaded", function () {
+            // 表单验证
+            const form = document.getElementById("patient-form");
+            const requiredInputs = form.querySelectorAll("[required]");
+            requiredInputs.forEach((input) => {
+                input.addEventListener("blur", function () {
+                    if (!this.value.trim()) {
+                        this.classList.add("border-red-500");
+                        // 添加错误提示
+                        const errorMsg = this.parentNode.querySelector(".error-message");
+                        if (!errorMsg) {
+                            const msg = document.createElement("p");
+                            msg.className = "error-message text-red-500 text-xs mt-1";
+                            msg.textContent = "此字段为必填项";
+                            this.parentNode.appendChild(msg);
+                        }
+                    } else {
+                        this.classList.remove("border-red-500");
+                        // 移除错误提示
+                        const errorMsg = this.parentNode.querySelector(".error-message");
+                        if (errorMsg) {
+                            errorMsg.remove();
+                        }
+                    }
+                });
+                input.addEventListener("input", function () {
+                    if (this.value.trim()) {
+                        this.classList.remove("border-red-500");
+                        // 移除错误提示
+                        const errorMsg = this.parentNode.querySelector(".error-message");
+                        if (errorMsg) {
+                            errorMsg.remove();
+                        }
+                    }
+                });
+            });
+            // 身份证号验证
+            const idCardInput = document.getElementById("idCardNumber");
+            idCardInput.addEventListener("blur", function () {
+                if (this.value.trim() && !/^\d{17}[\dXx]$/.test(this.value)) {
+                    this.classList.add("border-red-500");
+                    // 添加错误提示
+                    const errorMsg = this.parentNode.querySelector(".error-message");
+                    if (!errorMsg) {
+                        const msg = document.createElement("p");
+                        msg.className = "error-message text-red-500 text-xs mt-1";
+                        msg.textContent = "请输入有效的18位身份证号";
+                        this.parentNode.appendChild(msg);
+                    }
+                }
+            });
+            // 手机号验证
+            const phoneInput = document.getElementById("phoneNumber");
+            phoneInput.addEventListener("blur", function () {
+                if (this.value.trim() && !/^1[3-9]\d{9}$/.test(this.value)) {
+                    this.classList.add("border-red-500");
+                    // 添加错误提示
+                    const errorMsg = this.parentNode.querySelector(".error-message");
+                    if (!errorMsg) {
+                        const msg = document.createElement("p");
+                        msg.className = "error-message text-red-500 text-xs mt-1";
+                        msg.textContent = "请输入有效的11位手机号";
+                        this.parentNode.appendChild(msg);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

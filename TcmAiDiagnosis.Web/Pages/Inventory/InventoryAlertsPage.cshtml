@@ -1,0 +1,425 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.Inventory.InventoryAlertsPageModel
+@{
+    ViewData["Title"] = "库存预警监控";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <!-- 页面标题和操作栏 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>库存预警监控
+                    </h2>
+                    <p class="text-muted mb-0">实时监控库存异常情况，及时发现问题并处理</p>
+                </div>
+                <div class="btn-group">
+                    <a href="/Inventory" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>返回库存管理
+                    </a>
+                    <a href="/Inventory/InventoryAlertRulePage" class="btn btn-outline-primary">
+                        <i class="fas fa-cog me-1"></i>预警规则
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作工具栏 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-2">
+                    <div class="btn-group me-2">
+                        <form method="post" asp-page-handler="CheckAlerts" class="d-inline">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sync-alt me-1"></i>检查预警
+                            </button>
+                        </form>
+                        <a href="?handler=ForceRefresh" class="btn btn-outline-warning">
+                            <i class="fas fa-redo me-1"></i>强制刷新
+                        </a>
+                        <a href="?handler=Reset" class="btn btn-outline-danger">
+                            <i class="fas fa-power-off me-1"></i>重置状态
+                        </a>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-info" onclick="location.reload()">
+                            <i class="fas fa-refresh me-1"></i>刷新页面
+                        </button>
+                        <form method="post" asp-page-handler="ClearAll" class="d-inline" onsubmit="return confirm('确定要清除所有预警显示吗？')">
+                            <button type="submit" class="btn btn-outline-dark">
+                                <i class="fas fa-trash me-1"></i>清除显示
+                            </button>
+                        </form>
+                    </div>
+                    <div class="float-end">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>最后更新: @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预警统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-danger text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">@Model.CriticalAlertsCount</h2>
+                            <p class="mb-0">紧急预警</p>
+                            <small class="opacity-75">需要立即处理</small>
+                        </div>
+                        <div class="text-end">
+                            <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">@Model.HighAlertsCount</h2>
+                            <p class="mb-0">高级预警</p>
+                            <small class="opacity-75">需要尽快处理</small>
+                        </div>
+                        <div class="text-end">
+                            <i class="fas fa-exclamation-circle fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">@Model.MediumAlertsCount</h2>
+                            <p class="mb-0">中级预警</p>
+                            <small class="opacity-75">需要注意</small>
+                        </div>
+                        <div class="text-end">
+                            <i class="fas fa-info-circle fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0">@Model.TotalAlertsCount</h2>
+                            <p class="mb-0">总预警数</p>
+                            <small class="opacity-75">所有预警项目</small>
+                        </div>
+                        <div class="text-end">
+                            <i class="fas fa-bell fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 状态指示器 -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>系统状态:</strong>
+                    <span id="statusIndicator">监控中</span> |
+                    预警数量: <span class="badge bg-primary">@Model.CurrentAlerts.Count</span> |
+                    最后检查: <span id="lastCheckTime">@DateTime.Now.ToString("HH:mm:ss")</span>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-info" onclick="showSystemInfo()">
+                        <i class="fas fa-terminal me-1"></i>系统信息
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预警列表 -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list-alt me-2"></i>实时预警列表
+                <span class="badge bg-primary ms-2">@Model.TotalAlertsCount</span>
+            </h5>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-success" onclick="exportAlerts()">
+                    <i class="fas fa-download me-1"></i>导出
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshAlerts()">
+                    <i class="fas fa-redo me-1"></i>刷新
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.CurrentAlerts.Any())
+            {
+                <div class="list-group list-group-flush">
+                    @foreach (var alert in Model.CurrentAlerts.OrderByDescending(a => a.Priority).ThenByDescending(a => a.TriggeredAt))
+                    {
+                        <div class="list-group-item list-group-item-action border-0">
+                            <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge @Model.GetAlertPriorityBadge(alert.Priority) me-2 fs-6">
+                                        @Model.GetPriorityText(alert.Priority)
+                                    </span>
+                                    <span class="badge @Model.GetAlertTypeBadge(alert.AlertType) me-2">
+                                        <i class="@Model.GetAlertIcon(alert.AlertType) me-1"></i>
+                                        @Model.GetAlertTypeText(alert.AlertType)
+                                    </span>
+                                    <h6 class="mb-0 fw-bold text-dark">@alert.HerbName</h6>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    @alert.TriggeredAt.ToString("yyyy-MM-dd HH:mm")
+                                </small>
+                            </div>
+
+                            <p class="mb-2 text-dark">@alert.AlertMessage</p>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-muted small">
+                                    <span class="me-3">
+                                        <i class="fas fa-cog me-1"></i>规则: @alert.RuleName
+                                    </span>
+                                    <span class="me-3">
+                                        <i class="fas fa-barcode me-1"></i>批次: @alert.BatchNumber
+                                    </span>
+                                    <!-- 移除 CurrentQuantity 的显示 -->
+                                    @if (alert.Threshold > 0)
+                                    {
+                                        <span>
+                                            <i class="fas fa-chart-line me-1"></i>阈值: @alert.Threshold
+                                        </span>
+                                    }
+                                </div>
+                                <div class="btn-group">
+                                    <a href="/Inventory/Edit/@alert.InventoryItemId" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit me-1"></i>处理
+                                    </a>
+                                    <a href="/Inventory/Details/@alert.InventoryItemId" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye me-1"></i>详情
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @if (alert != Model.CurrentAlerts.Last())
+                        {
+                            <hr class="my-1 mx-3">
+                        }
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                    <h4 class="text-success mb-2">🎉 无预警信息</h4>
+                    <p class="text-muted mb-4">当前库存状态良好，所有指标正常</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <form method="post" asp-page-handler="CheckAlerts" class="d-inline">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-sync-alt me-1"></i>重新检查
+                            </button>
+                        </form>
+                        <a href="/Inventory" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>返回库存管理
+                        </a>
+                        <a href="/Inventory/InventoryAlertRulePage" class="btn btn-outline-primary">
+                            <i class="fas fa-cog me-1"></i>管理规则
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+        @if (Model.CurrentAlerts.Any())
+        {
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        共 @Model.CurrentAlerts.Count 个预警，最后更新于 @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                    </small>
+                    <div>
+                        <small class="text-muted me-3">
+                            紧急: <span class="badge bg-danger">@Model.CriticalAlertsCount</span>
+                            高级: <span class="badge bg-warning">@Model.HighAlertsCount</span>
+                            中级: <span class="badge bg-info">@Model.MediumAlertsCount</span>
+                        </small>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="scrollToTop()">
+                            <i class="fas fa-arrow-up me-1"></i>回到顶部
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+                // 页面加载时初始化
+                $(document).ready(function() {
+                    // 显示操作结果消息
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                            <text>showAlert('success', '@Html.Raw(TempData["SuccessMessage"])');</text>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                            <text>showAlert('error', '@Html.Raw(TempData["ErrorMessage"])');</text>
+                    }
+
+                    // 更新最后检查时间
+                    updateLastCheckTime();
+
+                    // 初始化工具提示
+                    $('[data-bs-toggle="tooltip"]').tooltip();
+                });
+
+                // 显示消息提示
+                function showAlert(type, message) {
+                    const alertClass = type === 'success' ? 'alert-success' :
+                                      type === 'warning' ? 'alert-warning' : 'alert-danger';
+                    const icon = type === 'success' ? 'fa-check-circle' :
+                                type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle';
+
+                    const alertHtml = `
+                        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="fas ${icon} me-2 fa-lg"></i>
+                                <div class="flex-grow-1">${message}</div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        </div>
+                    `;
+
+                    // 插入到页面顶部
+                    $('.container-fluid').prepend(alertHtml);
+
+                    // 自动关闭成功消息
+                    if (type === 'success') {
+                        setTimeout(() => {
+                            $('.alert').alert('close');
+                        }, 5000);
+                    }
+                }
+
+                // 刷新预警列表
+                function refreshAlerts() {
+                    showAlert('info', '正在刷新预警列表...');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                }
+
+                // 检查预警
+                function checkAlerts() {
+                    showAlert('info', '正在检查库存预警...');
+                    $('form[asp-page-handler="CheckAlerts"]').submit();
+                }
+
+                // 强制刷新
+                function forceRefresh() {
+                    if (confirm('确定要强制刷新吗？这将清除所有缓存数据并重新加载。')) {
+                        showAlert('warning', '正在强制刷新数据...');
+                        window.location.href = '?handler=ForceRefresh';
+                    }
+                }
+
+                // 重置状态
+                function resetState() {
+                    if (confirm('确定要重置页面状态吗？这将清除所有临时数据。')) {
+                        showAlert('info', '正在重置页面状态...');
+                        window.location.href = '?handler=Reset';
+                    }
+                }
+
+                // 导出预警数据
+                function exportAlerts() {
+                    if (@Model.CurrentAlerts.Count === 0) {
+                        showAlert('warning', '当前没有预警数据可导出');
+                        return;
+                    }
+
+                    showAlert('info', '正在准备导出数据...');
+                    setTimeout(() => {
+                        showAlert('warning', '导出功能正在开发中，敬请期待！');
+                    }, 1000);
+                }
+
+                // 显示系统信息
+                function showSystemInfo() {
+                    const info = `
+        库存预警监控系统信息:
+
+        • 当前时间: ${new Date().toLocaleString()}
+        • 预警总数: @Model.TotalAlertsCount
+        • 紧急预警: @Model.CriticalAlertsCount
+        • 高级预警: @Model.HighAlertsCount
+        • 中级预警: @Model.MediumAlertsCount
+        • 页面URL: ${window.location.href}
+        • 用户代理: ${navigator.userAgent}
+
+        系统状态: 正常运行
+                    `;
+                    alert(info);
+                }
+
+                // 更新最后检查时间
+                function updateLastCheckTime() {
+                    $('#lastCheckTime').text(new Date().toLocaleTimeString());
+                }
+
+                // 回到顶部
+                function scrollToTop() {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+
+                // 键盘快捷键支持
+                $(document).on('keydown', function(e) {
+                    // F5 - 刷新页面
+                    if (e.key === 'F5') {
+                        e.preventDefault();
+                        refreshAlerts();
+                    }
+                    // Ctrl + R - 刷新页面
+                    if (e.ctrlKey && e.key === 'r') {
+                        e.preventDefault();
+                        refreshAlerts();
+                    }
+                    // Ctrl + F - 强制刷新
+                    if (e.ctrlKey && e.key === 'f') {
+                        e.preventDefault();
+                        forceRefresh();
+                    }
+                    // Ctrl + E - 导出数据
+                    if (e.ctrlKey && e.key === 'e') {
+                        e.preventDefault();
+                        exportAlerts();
+                    }
+                    // Escape - 回到顶部
+                    if (e.key === 'Escape') {
+                        scrollToTop();
+                    }
+                });
+    </script>
+}

@@ -1,0 +1,94 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.HerbContraindication.IndexModel
+@{
+    ViewData["Title"] = "配伍禁忌管理";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<!-- 搜索区域 -->
+<form method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-3">
+            <input type="text" name="SearchPrimaryHerb" value="@Model.SearchPrimaryHerb" class="form-control" placeholder="主药材"/>
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="SearchConflictHerb" value="@Model.SearchConflictHerb" class="form-control" placeholder="冲突药材"/>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary">搜索</button>
+            <a asp-page="Create" class="btn btn-success">新增</a>
+        </div>
+    </div>
+</form>
+
+<!-- 列表表格 -->
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>主药材</th>
+            <th>冲突药材</th>
+            <th>禁忌类型</th>
+            <th>风险等级</th>
+            <th>绝对禁忌</th>
+            <th>是否启用</th>
+            <th>审核状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody id="contraindicationTableBody">
+        <!-- 通过 JS/Ajax 填充 -->
+    </tbody>
+</table>
+
+<!-- 分页 -->
+<nav>
+    <ul class="pagination" id="paginationContainer"></ul>
+</nav>
+
+@section Scripts {
+<script>
+async function loadContraindications(page = 1) {
+    const primaryHerb = document.querySelector('input[name="SearchPrimaryHerb"]').value;
+    const conflictHerb = document.querySelector('input[name="SearchConflictHerb"]').value;
+
+    const response = await fetch(`/api/HerbContraindication/query?SearchPrimaryHerb=${primaryHerb}&SearchConflictHerb=${conflictHerb}&PageNumber=${page}&PageSize=10`);
+    const data = await response.json();
+
+    const tbody = document.getElementById('contraindicationTableBody');
+    tbody.innerHTML = '';
+
+    data.items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.primaryHerbName}</td>
+            <td>${item.conflictHerbName}</td>
+            <td>${item.contraindicationType}</td>
+            <td>${item.riskLevelDescription}</td>
+            <td>${item.isAbsoluteContraindication ? '绝对' : '相对'}</td>
+            <td>${item.isActive ? '启用' : '禁用'}</td>
+            <td>${item.reviewStatusDescription}</td>
+            <td>
+                <a href="/HerbContraindications/Edit?id=${item.contraindicationId}" class="btn btn-sm btn-primary">编辑</a>
+                <a href="/HerbContraindications/Details?id=${item.contraindicationId}" class="btn btn-sm btn-info">查看</a>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // 简单分页
+    const pagination = document.getElementById('paginationContainer');
+    pagination.innerHTML = '';
+    for(let i=1; i <= Math.ceil(data.totalCount / data.pageSize); i++){
+        const li = document.createElement('li');
+        li.className = 'page-item' + (i===page ? ' active':'');
+        li.innerHTML = `<a class="page-link" href="#" onclick="loadContraindications(${i});return false;">${i}</a>`;
+        pagination.appendChild(li);
+    }
+}
+
+// 初次加载
+loadContraindications();
+</script>
+}
+

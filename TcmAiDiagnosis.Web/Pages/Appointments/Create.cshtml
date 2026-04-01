@@ -1,0 +1,327 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.Appointments.CreateModel
+@{
+    ViewData["Title"] = "新建预约";
+}
+
+<h2 class="mb-4">新建预约</h2>
+
+<form method="post" class="p-4 border rounded shadow-sm bg-light">
+    <!-- 患者选择 -->
+    <div class="form-group mb-3">
+        <label class="form-label">选择患者</label>
+        <select asp-for="Appointment.PatientGuid" class="form-select" id="patientSelect" required>
+            <option value="">-- 选择患者 --</option>
+            @foreach (var patient in Model.Patients)
+            {
+                <option value="@patient.Id">@patient.FullName (@patient.PhoneNumber)</option>
+            }
+        </select>
+        <span asp-validation-for="Appointment.PatientGuid" class="text-danger"></span>
+        <small class="form-text text-muted">找不到患者？<a href="#" id="createPatient">新建患者档案</a></small>
+    </div>
+
+    <!-- 医生选择 -->
+    <div class="form-group mb-3">
+        <label class="form-label">选择医生</label>
+        <select asp-for="Appointment.DoctorId" class="form-select" id="doctorSelect" required>
+            <option value="">-- 选择医生 --</option>
+            @foreach (var doctor in Model.Doctors)
+            {
+                <option value="@doctor.Id" data-name="@doctor.FullName">@doctor.FullName</option>
+            }
+        </select>
+        <span asp-validation-for="Appointment.DoctorId" class="text-danger"></span>
+    </div>
+
+    <!-- 预约时间选择 -->
+    <div class="form-group mb-3">
+        <label class="form-label">预约日期和时间</label>
+        <div class="row">
+            <div class="col-md-6">
+                <label class="form-label">日期</label>
+                <input type="date" class="form-control" id="appointmentDate"
+                       min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                       value="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+            </div>
+            @* <div class="col-md-6">
+                <label class="form-label">时间段</label>
+                <select class="form-select" id="timeSlot" required>
+                    <option value="">-- 选择时间段 --</option>
+                    <!-- 时间段将通过JavaScript动态生成 -->
+                </select>
+            </div> *@
+            <div class="col-md-6">
+                <label class="form-label">时间段</label>
+                <select asp-for="Appointment.AppointmentTime" class="form-select" required>
+                    <option value="">-- 选择时间段 --</option>
+                    @foreach (var slot in Model.TimeSlots)
+                    {
+                        <option value="@slot.Value">@slot.Text</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <input type="hidden" asp-for="Appointment.AppointmentTime" id="appointmentTime" />
+        <span asp-validation-for="Appointment.AppointmentTime" class="text-danger"></span>
+    </div>
+
+    <!-- 预约类型和时长 -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="Appointment.AppointmentType" class="form-label">预约类型</label>
+            <select asp-for="Appointment.AppointmentType" class="form-select">
+                <option value="初诊">初诊</option>
+                <option value="复诊">复诊</option>
+                <option value="咨询">咨询</option>
+                <option value="针灸">针灸治疗</option>
+                <option value="推拿">推拿理疗</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Appointment.Duration" class="form-label">预约时长（分钟）</label>
+            <select asp-for="Appointment.Duration" class="form-select">
+                <option value="30">30分钟</option>
+                <option value="45">45分钟</option>
+                <option value="60">60分钟</option>
+                <option value="90">90分钟</option>
+                <option value="120">120分钟</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 症状描述 -->
+    <div class="form-group mb-3">
+        <label asp-for="Appointment.Symptoms" class="form-label">主要症状</label>
+        <textarea asp-for="Appointment.Symptoms" class="form-control" rows="3"
+                  placeholder="请简要描述主要症状、持续时间、加重缓解因素等..."></textarea>
+        <span asp-validation-for="Appointment.Symptoms" class="text-danger"></span>
+    </div>
+
+    <!-- 联系信息 -->
+    <div class="form-group mb-3">
+        <label asp-for="Appointment.ContactPhone" class="form-label">联系电话</label>
+        <input asp-for="Appointment.ContactPhone" class="form-control"
+               placeholder="用于就诊提醒和紧急联系" />
+        <span asp-validation-for="Appointment.ContactPhone" class="text-danger"></span>
+    </div>
+
+    <!-- 备注 -->
+    <div class="form-group mb-3">
+        <label asp-for="Appointment.Remarks" class="form-label">备注</label>
+        <textarea asp-for="Appointment.Remarks" class="form-control" rows="2"
+                  placeholder="其他需要说明的事项..."></textarea>
+    </div>
+
+    <!-- 预约信息预览 -->
+    <div class="card mb-3 d-none" id="appointmentPreview">
+        <div class="card-header">
+            <h5 class="card-title mb-0">预约信息预览</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>医生：</strong><span id="previewDoctor"></span>
+                </div>
+                <div class="col-md-6">
+                    <strong>时间：</strong><span id="previewTime"></span>
+                </div>
+                <div class="col-md-6">
+                    <strong>类型：</strong><span id="previewType"></span>
+                </div>
+                <div class="col-md-6">
+                    <strong>时长：</strong><span id="previewDuration"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+            <label class="form-check-label" for="agreeTerms">
+                我已阅读并同意 <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">预约须知</a>
+            </label>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="submitBtn">提交预约</button>
+    <a asp-page="Index" class="btn btn-secondary ms-2">返回列表</a>
+</form>
+
+<!-- 预约须知模态框 -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">预约须知</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ol>
+                    <li>请提前10分钟到达诊所完成登记</li>
+                    <li>如需取消预约，请至少提前2小时通知</li>
+                    <li>迟到超过15分钟，预约将自动取消</li>
+                    <li>请携带有效身份证件和医保卡</li>
+                    <li>初诊患者请填写完整的健康信息表</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新建患者模态框 -->
+<div class="modal fade" id="patientModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">新建患者档案</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="patientForm">
+                    <div class="mb-3">
+                        <label class="form-label">姓名</label>
+                        <input type="text" class="form-control" id="patientName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">手机号</label>
+                        <input type="tel" class="form-control" id="patientPhone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">性别</label>
+                        <select class="form-select" id="patientGender">
+                            <option value="">请选择</option>
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">出生日期</label>
+                        <input type="date" class="form-control" id="patientBirthDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">过敏史</label>
+                        <textarea class="form-control" id="patientAllergy" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="savePatient">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+                $(document).ready(function() {
+            // 初始化时间段
+            generateTimeSlots();
+
+            // 日期或医生变化时重新生成时间段
+            $('#appointmentDate, #doctorSelect').change(function() {
+                generateTimeSlots();
+                updatePreview();
+            });
+
+            // 表单字段变化时更新预览
+            $('select, input, textarea').change(updatePreview);
+
+            // 新建患者弹窗
+            $('#createPatient').click(function(e) {
+                e.preventDefault();
+                $('#patientModal').modal('show');
+            });
+
+            // 保存患者
+            $('#savePatient').click(function() {
+                alert('患者保存功能需要后端API支持');
+                $('#patientModal').modal('hide');
+            });
+
+            // 表单提交前验证
+            $('form').submit(function(e) {
+                if (!validateForm()) {
+                    e.preventDefault();
+                    alert('请完善所有必填信息');
+                }
+            });
+        });
+
+                        function generateTimeSlots() {
+            const date = $('#appointmentDate').val();
+            const doctorId = $('#doctorSelect').val();
+            const timeSelect = $('#timeSlot');
+
+            timeSelect.empty().append('<option value="">-- 选择时间段 --</option>');
+
+            if (!date || !doctorId) return;
+
+            $.ajax({
+                url: '@Url.Page("Create", "TimeSlots")',
+                type: 'get',
+                data: { doctorId: doctorId, date: date },
+                success: function(slots) {
+                    if(slots.length === 0){
+                        timeSelect.append('<option value="">没有可预约时间</option>');
+                    } else {
+                        slots.forEach(time => {
+                            timeSelect.append(`<option value="${time}">${time}</option>`);
+                        });
+                    }
+                },
+                error: function() {
+                    alert('获取时间段失败，请刷新页面');
+                }
+            });
+
+            // 选择事件绑定
+            timeSelect.off('change').on('change', function() {
+                const selectedTime = $(this).val();
+                if (selectedTime) {
+                    $('#appointmentTime').val(`${date}T${selectedTime}`);
+                }
+            });
+        }
+
+
+
+        function updatePreview() {
+            const doctorId = $('#doctorSelect').val();
+            const doctorName = $('#doctorSelect option:selected').text();
+            const date = $('#appointmentDate').val();
+            const time = $('#timeSlot').val();
+            const type = $('#Appointment_AppointmentType').val();
+            const duration = $('#Appointment_Duration').val();
+
+            if (doctorId && date && time) {
+                $('#previewDoctor').text(doctorName);
+                $('#previewTime').text(`${date} ${time}`);
+                $('#previewType').text(type);
+                $('#previewDuration').text(`${duration}分钟`);
+                $('#appointmentPreview').removeClass('d-none');
+            } else {
+                $('#appointmentPreview').addClass('d-none');
+            }
+        }
+
+        function validateForm() {
+            const patientGuid = $('#patientSelect').val();
+            const doctorId = $('#doctorSelect').val();
+            const appointmentTime = $('#appointmentTime').val();
+            const agreeTerms = $('#agreeTerms').is(':checked');
+
+            return patientGuid && doctorId && appointmentTime && agreeTerms;
+        }
+    </script>
+}

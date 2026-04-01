@@ -1,0 +1,695 @@
+/*
+ * 中医数字化诊疗平台 - 医疗系统样式
+ * 基于PlainAdmin主题设计，优化配色方案
+ * 版本: 3.0
+ * 更新日期: 2024
+ */
+
+/* ========================================
+   医疗系统专业配色方案 - 基于PlainAdmin优化
+   ======================================== */
+:root {
+    /* 医疗系统专业配色 - 更柔和的色彩方案 */
+    --medical-primary: #4F6FBF;          /* 柔和的医疗蓝 - 主要色彩 */
+    --medical-primary-light: #6B85D1;    /* 浅医疗蓝 - 悬停状态 */
+    --medical-primary-dark: #3A5299;     /* 深医疗蓝 - 激活状态 */
+    --medical-accent: #365CF5;           /* 强调色 - 仅用于小点缀和重要提示 */
+    
+    /* 背景和容器色彩 */
+    --medical-background: #F8FAFC;       /* 页面背景色 */
+    --medical-card-bg: #FFFFFF;          /* 卡片背景 */
+    --medical-section-bg: #F1F5F9;       /* 区域背景 */
+    
+    /* 文本色彩层次 */
+    --medical-text: #475569;             /* 主文本色 */
+    --medical-text-light: #64748B;       /* 次要文本色 */
+    --medical-text-muted: #94A3B8;       /* 辅助文本色 */
+    
+    /* 边框和分割线 */
+    --medical-border: #E2E8F0;           /* 主边框色 */
+    --medical-border-light: #F1F5F9;     /* 浅边框色 */
+    --medical-divider: #CBD5E1;          /* 分割线色 */
+    
+    /* 功能色彩 - 医疗系统专用 */
+    --medical-success: #059669;          /* 成功色 - 深绿，表示健康/正常 */
+    --medical-success-light: #10B981;    /* 浅成功色 */
+    --medical-success-bg: #ECFDF5;       /* 成功背景色 */
+    
+    --medical-warning: #D97706;          /* 警告色 - 深橙，表示注意 */
+    --medical-warning-light: #F59E0B;    /* 浅警告色 */
+    --medical-warning-bg: #FFFBEB;       /* 警告背景色 */
+    
+    --medical-danger: #DC2626;           /* 危险色 - 深红，表示异常/紧急 */
+    --medical-danger-light: #EF4444;     /* 浅危险色 */
+    --medical-danger-bg: #FEF2F2;        /* 危险背景色 */
+    
+    --medical-info: #0284C7;             /* 信息色 - 深蓝，表示提示 */
+    --medical-info-light: #0EA5E9;       /* 浅信息色 */
+    --medical-info-bg: #F0F9FF;          /* 信息背景色 */
+    
+    /* 中性色彩系统 */
+    --medical-white: #FFFFFF;
+    --medical-gray-50: #F8FAFC;
+    --medical-gray-100: #F1F5F9;
+    --medical-gray-200: #E2E8F0;
+    --medical-gray-300: #CBD5E1;
+    --medical-gray-400: #94A3B8;
+    --medical-gray-500: #64748B;
+    --medical-gray-600: #475569;
+    --medical-gray-700: #334155;
+    --medical-gray-800: #1E293B;
+    --medical-gray-900: #0F172A;
+    
+    /* 阴影系统 - 更柔和的阴影 */
+    --medical-shadow: rgba(79, 111, 191, 0.08);
+    --medical-shadow-light: rgba(79, 111, 191, 0.04);
+    --medical-shadow-strong: rgba(79, 111, 191, 0.15);
+    --medical-shadow-card: 0px 4px 6px -1px rgba(79, 111, 191, 0.1), 0px 2px 4px -1px rgba(79, 111, 191, 0.06);
+    --medical-shadow-hover: 0px 10px 15px -3px rgba(79, 111, 191, 0.1), 0px 4px 6px -2px rgba(79, 111, 191, 0.05);
+    
+    /* 字体系统 */
+    --medical-font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --medical-font-size: 16px;
+    --medical-font-size-sm: 14px;
+    --medical-font-size-lg: 18px;
+    --medical-font-weight-normal: 400;
+    --medical-font-weight-medium: 500;
+    --medical-font-weight-semibold: 600;
+    --medical-font-weight-bold: 700;
+    
+    /* 间距系统 */
+    --medical-spacing-xs: 4px;
+    --medical-spacing-sm: 8px;
+    --medical-spacing-md: 16px;
+    --medical-spacing-lg: 24px;
+    --medical-spacing-xl: 32px;
+    
+    /* 圆角系统 */
+    --medical-radius-sm: 4px;
+    --medical-radius-md: 6px;
+    --medical-radius-lg: 8px;
+    --medical-radius-xl: 12px;
+}
+
+/* ========================================
+   基础样式重置
+   ======================================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--medical-font-family);
+    font-size: var(--medical-font-size);
+    font-weight: var(--medical-font-weight-normal);
+    color: var(--medical-text);
+    background-color: var(--medical-background);
+    line-height: 1.6;
+}
+
+/* ========================================
+   页面容器
+   ======================================== */
+.medical-container {
+    background-color: var(--medical-background);
+    min-height: 100vh;
+    padding: var(--medical-spacing-lg);
+}
+
+/* ========================================
+   卡片组件 - 优化的PlainAdmin风格
+   ======================================== */
+.medical-card {
+    background: var(--medical-card-bg);
+    border: 1px solid var(--medical-border-light);
+    border-radius: var(--medical-radius-lg);
+    box-shadow: var(--medical-shadow-card);
+    margin-bottom: var(--medical-spacing-lg);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.medical-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--medical-shadow-hover);
+    border-color: var(--medical-border);
+}
+
+.medical-card-header {
+    background: linear-gradient(135deg, var(--medical-primary) 0%, var(--medical-primary-light) 100%);
+    color: var(--medical-white);
+    padding: var(--medical-spacing-lg) var(--medical-spacing-xl);
+    border-bottom: none;
+    font-weight: var(--medical-font-weight-semibold);
+    font-size: var(--medical-font-size-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--medical-spacing-sm);
+    font-family: var(--medical-font-family);
+    position: relative;
+}
+
+.medical-card-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+}
+
+.medical-card-header i {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.medical-card-body {
+    padding: var(--medical-spacing-xl);
+    background: var(--medical-card-bg);
+}
+
+/* ========================================
+   表单组件 - 优化的PlainAdmin风格
+   ======================================== */
+.medical-form-label {
+    color: var(--medical-text);
+    font-weight: var(--medical-font-weight-medium);
+    margin-bottom: var(--medical-spacing-sm);
+    font-size: var(--medical-font-size);
+    font-family: var(--medical-font-family);
+    display: flex;
+    align-items: center;
+    gap: var(--medical-spacing-sm);
+}
+
+.medical-form-label i {
+    color: var(--medical-primary);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* 详情页面标签显示优化 */
+.medical-detail-item {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: var(--medical-spacing-md);
+    font-size: var(--medical-font-size);
+    line-height: 1.6;
+}
+
+.medical-detail-label {
+    color: var(--medical-text);
+    font-weight: var(--medical-font-weight-medium);
+    margin-right: var(--medical-spacing-sm);
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: var(--medical-font-size);
+}
+
+.medical-detail-content {
+    color: var(--medical-text-light);
+    font-weight: var(--medical-font-weight-normal);
+    flex: 1;
+    font-size: var(--medical-font-size);
+}
+
+.medical-form-control {
+    border: 1px solid var(--medical-border);
+    border-radius: var(--medical-radius-md);
+    padding: 12px var(--medical-spacing-md);
+    font-size: var(--medical-font-size);
+    font-family: var(--medical-font-family);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    background-color: var(--medical-white);
+    color: var(--medical-text);
+    line-height: 1.5;
+}
+
+.medical-form-control:focus {
+    border-color: var(--medical-primary);
+    box-shadow: 0 0 0 3px rgba(79, 111, 191, 0.1);
+    outline: none;
+    background-color: var(--medical-white);
+}
+
+.medical-form-control:hover:not(:focus) {
+    border-color: var(--medical-primary-light);
+}
+
+.medical-form-control::placeholder {
+    color: var(--medical-text-muted);
+    opacity: 1;
+}
+
+/* 优化select元素样式 */
+select.medical-form-control {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394A3B8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 1.2em 1.2em;
+    padding-right: 2.5rem;
+    appearance: none;
+    cursor: pointer;
+}
+
+select.medical-form-control:focus {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%234F6FBF' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* 针对较短内容的select元素 */
+.medical-form-control.compact {
+    max-width: 200px;
+}
+
+/* 文本区域样式优化 */
+textarea.medical-form-control {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.6;
+}
+
+/* ========================================
+   复选框和单选框样式 - 优化的PlainAdmin风格
+   ======================================== */
+.medical-check {
+    display: inline-flex;
+    align-items: center;
+    margin-right: var(--medical-spacing-md);
+    margin-bottom: var(--medical-spacing-sm);
+    padding: var(--medical-spacing-sm) var(--medical-spacing-md);
+    border-radius: var(--medical-radius-md);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+}
+
+.medical-check:hover {
+    background-color: rgba(79, 111, 191, 0.05);
+}
+
+.medical-check-input {
+    margin-right: var(--medical-spacing-sm);
+    accent-color: var(--medical-primary);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.medical-check-label {
+    color: var(--medical-text);
+    font-size: var(--medical-font-size);
+    margin-bottom: 0;
+    cursor: pointer;
+    font-family: var(--medical-font-family);
+    font-weight: var(--medical-font-weight-normal);
+    user-select: none;
+}
+
+/* ========================================
+   按钮组件 - 优化的PlainAdmin风格
+   ======================================== */
+.medical-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px var(--medical-spacing-lg);
+    border-radius: var(--medical-radius-md);
+    font-weight: var(--medical-font-weight-medium);
+    font-size: var(--medical-font-size);
+    font-family: var(--medical-font-family);
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: var(--medical-spacing-sm);
+    line-height: 1.5;
+    min-height: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.medical-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 111, 191, 0.2);
+}
+
+.medical-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* 主要按钮样式 */
+.medical-btn-primary {
+    background: linear-gradient(135deg, var(--medical-primary) 0%, var(--medical-primary-light) 100%);
+    color: var(--medical-white);
+    border-color: var(--medical-primary);
+}
+
+.medical-btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--medical-primary-dark) 0%, var(--medical-primary) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 111, 191, 0.3);
+}
+
+.medical-btn-primary:active {
+    transform: translateY(0);
+}
+
+/* 次要按钮样式 */
+.medical-btn-secondary {
+    background: var(--medical-white);
+    color: var(--medical-primary);
+    border-color: var(--medical-border);
+}
+
+.medical-btn-secondary:hover:not(:disabled) {
+    background: var(--medical-gray-50);
+    border-color: var(--medical-primary);
+    color: var(--medical-primary-dark);
+}
+
+/* 成功按钮样式 */
+.medical-btn-success {
+    background: var(--medical-success);
+    color: var(--medical-white);
+    border-color: var(--medical-success);
+}
+
+.medical-btn-success:hover:not(:disabled) {
+    background: var(--medical-success-light);
+    transform: translateY(-1px);
+}
+
+/* 警告按钮样式 */
+.medical-btn-warning {
+    background: var(--medical-warning);
+    color: var(--medical-white);
+    border-color: var(--medical-warning);
+}
+
+.medical-btn-warning:hover:not(:disabled) {
+    background: var(--medical-warning-light);
+    transform: translateY(-1px);
+}
+
+/* 危险按钮样式 */
+.medical-btn-danger {
+    background: var(--medical-danger);
+    color: var(--medical-white);
+    border-color: var(--medical-danger);
+}
+
+.medical-btn-danger:hover:not(:disabled) {
+    background: var(--medical-danger-light);
+    transform: translateY(-1px);
+}
+
+/* 按钮尺寸变体 */
+.medical-btn.btn-sm {
+    padding: var(--medical-spacing-xs) var(--medical-spacing-sm);
+    font-size: var(--medical-font-size-sm);
+    min-height: 32px;
+}
+
+.medical-btn.btn-lg {
+    padding: var(--medical-spacing-md) var(--medical-spacing-xl);
+    font-size: var(--medical-font-size-lg);
+    min-height: 48px;
+}
+
+/* ========================================
+   分组和分节样式
+   ======================================== */
+.medical-section {
+    margin-bottom: var(--medical-spacing-xl);
+    padding: var(--medical-spacing-lg);
+    background: var(--medical-section-bg);
+    border-radius: var(--medical-radius-lg);
+    border: 1px solid var(--medical-border-light);
+}
+
+.medical-section-title {
+    font-size: var(--medical-font-size-lg);
+    font-weight: var(--medical-font-weight-semibold);
+    color: var(--medical-text);
+    margin-bottom: var(--medical-spacing-md);
+    padding-bottom: var(--medical-spacing-sm);
+    border-bottom: 2px solid var(--medical-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--medical-spacing-sm);
+}
+
+.medical-section-title i {
+    color: var(--medical-primary);
+    font-size: 1.1rem;
+}
+
+/* ========================================
+   输入组样式
+   ======================================== */
+.medical-input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    border-radius: var(--medical-radius-md);
+    overflow: hidden;
+    border: 1px solid var(--medical-border);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.medical-input-group:focus-within {
+    border-color: var(--medical-primary);
+    box-shadow: 0 0 0 3px rgba(79, 111, 191, 0.1);
+}
+
+.medical-input-group-text {
+    background: var(--medical-gray-100);
+    color: var(--medical-text-light);
+    padding: 12px var(--medical-spacing-md);
+    border: none;
+    font-size: var(--medical-font-size);
+    font-weight: var(--medical-font-weight-medium);
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.medical-input-group .medical-form-control {
+    border: none;
+    border-radius: 0;
+    flex: 1;
+}
+
+.medical-input-group .medical-form-control:focus {
+    box-shadow: none;
+}
+
+/* ========================================
+   分割线样式
+   ======================================== */
+.medical-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--medical-divider) 50%, transparent 100%);
+    margin: var(--medical-spacing-lg) 0;
+    border: none;
+}
+
+/* ========================================
+   响应式设计
+   ======================================== */
+@media (max-width: 768px) {
+    .medical-container {
+        padding: var(--medical-spacing-md);
+    }
+    
+    .medical-card-header {
+        padding: var(--medical-spacing-md) var(--medical-spacing-lg);
+        font-size: var(--medical-font-size);
+    }
+    
+    .medical-card-body {
+        padding: var(--medical-spacing-lg);
+    }
+    
+    .medical-btn {
+        padding: var(--medical-spacing-sm) var(--medical-spacing-md);
+        font-size: var(--medical-font-size-sm);
+    }
+    
+    .medical-check {
+        margin-right: var(--medical-spacing-sm);
+        padding: var(--medical-spacing-xs) var(--medical-spacing-sm);
+    }
+}
+
+/* ========================================
+   表格样式
+   ======================================== */
+.medical-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--medical-white);
+    border-radius: var(--medical-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--medical-shadow-card);
+}
+
+.medical-table th {
+    background: var(--medical-gray-100);
+    color: var(--medical-text);
+    font-weight: var(--medical-font-weight-semibold);
+    padding: var(--medical-spacing-md) var(--medical-spacing-lg);
+    text-align: left;
+    border-bottom: 1px solid var(--medical-border);
+}
+
+.medical-table td {
+    padding: var(--medical-spacing-md) var(--medical-spacing-lg);
+    border-bottom: 1px solid var(--medical-border-light);
+    color: var(--medical-text);
+}
+
+.medical-table tbody tr:hover {
+    background: var(--medical-gray-50);
+}
+
+.medical-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ========================================
+   状态指示器
+   ======================================== */
+.medical-status {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--medical-spacing-xs) var(--medical-spacing-sm);
+    border-radius: var(--medical-radius-sm);
+    font-size: var(--medical-font-size-sm);
+    font-weight: var(--medical-font-weight-medium);
+    gap: var(--medical-spacing-xs);
+}
+
+.medical-status-success {
+    background: var(--medical-success-bg);
+    color: var(--medical-success);
+}
+
+.medical-status-warning {
+    background: var(--medical-warning-bg);
+    color: var(--medical-warning);
+}
+
+.medical-status-danger {
+    background: var(--medical-danger-bg);
+    color: var(--medical-danger);
+}
+
+.medical-status-info {
+    background: var(--medical-info-bg);
+    color: var(--medical-info);
+}
+
+/* ========================================
+   工具提示样式
+   ======================================== */
+.medical-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.medical-tooltip .medical-tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--medical-gray-800);
+    color: var(--medical-white);
+    text-align: center;
+    border-radius: var(--medical-radius-md);
+    padding: var(--medical-spacing-sm) var(--medical-spacing-md);
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: var(--medical-font-size-sm);
+    box-shadow: var(--medical-shadow-card);
+}
+
+.medical-tooltip:hover .medical-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* ========================================
+   动画效果
+   ======================================== */
+@keyframes medical-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.medical-fade-in {
+    animation: medical-fade-in 0.3s ease-out;
+}
+
+/* ========================================
+   打印样式
+   ======================================== */
+@media print {
+    .medical-card {
+        box-shadow: none;
+        border: 1px solid var(--medical-border);
+        break-inside: avoid;
+    }
+    
+    .medical-btn {
+        display: none;
+    }
+    
+    .medical-card-header {
+        background: var(--medical-gray-100) !important;
+        color: var(--medical-text) !important;
+    }
+}
+
+/* ========================================
+   辅助类
+   ======================================== */
+.medical-text-primary { color: var(--medical-primary) !important; }
+.medical-text-success { color: var(--medical-success) !important; }
+.medical-text-warning { color: var(--medical-warning) !important; }
+.medical-text-danger { color: var(--medical-danger) !important; }
+.medical-text-info { color: var(--medical-info) !important; }
+.medical-text-muted { color: var(--medical-text-muted) !important; }
+
+.medical-bg-primary { background-color: var(--medical-primary) !important; }
+.medical-bg-success { background-color: var(--medical-success-bg) !important; }
+.medical-bg-warning { background-color: var(--medical-warning-bg) !important; }
+.medical-bg-danger { background-color: var(--medical-danger-bg) !important; }
+.medical-bg-info { background-color: var(--medical-info-bg) !important; }
+
+.medical-border-primary { border-color: var(--medical-primary) !important; }
+.medical-border-success { border-color: var(--medical-success) !important; }
+.medical-border-warning { border-color: var(--medical-warning) !important; }
+.medical-border-danger { border-color: var(--medical-danger) !important; }
+.medical-border-info { border-color: var(--medical-info) !important; }
+
+.medical-shadow { box-shadow: var(--medical-shadow-card) !important; }
+.medical-shadow-hover { box-shadow: var(--medical-shadow-hover) !important; }
+
+.medical-rounded { border-radius: var(--medical-radius-md) !important; }
+.medical-rounded-lg { border-radius: var(--medical-radius-lg) !important; }
+.medical-rounded-xl { border-radius: var(--medical-radius-xl) !important; }

@@ -1,0 +1,523 @@
+/*
+ * 中医数字化诊疗平台 - 医疗系统样式
+ * 基于PlainAdmin主题设计
+ * 版本: 2.0
+ * 更新日期: 2024
+ */
+
+/* ========================================
+   PlainAdmin主题配色方案 - 适配中医诊疗系统
+   ======================================== */
+:root {
+    /* PlainAdmin主色调 */
+    --medical-primary: #365CF5;      /* PlainAdmin主色调 - 现代蓝紫色 */
+    --medical-secondary: #4f6ff5;    /* 浅主色调 - 用于悬停和次要元素 */
+    --medical-accent: #2a4dd4;       /* 深主色调 - 用于强调和激活状态 */
+    
+    /* 背景和边框色 */
+    --medical-light: #f1f5f9;        /* PlainAdmin背景色 - 柔和的浅灰色 */
+    --medical-border: #e5e7eb;       /* 边框色 - 淡雅的边框颜色 */
+    --medical-text: #5d657b;         /* PlainAdmin文本色 - 易读的深灰色 */
+    --medical-white: #ffffff;        /* 纯白 */
+    
+    /* 功能色彩 */
+    --medical-success: #219653;      /* PlainAdmin成功色 */
+    --medical-warning: #f7c800;      /* PlainAdmin警告色 */
+    --medical-danger: #d50100;       /* PlainAdmin危险色 */
+    
+    /* PlainAdmin阴影效果 */
+    --medical-shadow: 0px 12px 24px -4px rgba(145, 158, 171, 0.12), 0px 0px 2px 0px rgba(145, 158, 171, 0.20);
+    --medical-shadow-hover: 0px 8px 16px -4px rgba(54, 92, 245, 0.3);
+    
+    /* 字体设置 */
+    --medical-font-family: "Plus Jakarta Sans", sans-serif;
+    --medical-font-size: 14px;
+    --medical-font-weight-normal: 500;
+    --medical-font-weight-bold: 600;
+}
+
+/* ========================================
+   基础样式重置
+   ======================================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--medical-font-family);
+    font-size: var(--medical-font-size);
+    color: var(--medical-text);
+    background-color: var(--medical-light);
+    line-height: 1.6;
+}
+
+/* ========================================
+   页面容器
+   ======================================== */
+.medical-container {
+    background-color: var(--medical-light);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* ========================================
+   卡片组件 - PlainAdmin风格
+   ======================================== */
+.medical-card {
+    background: var(--medical-white);
+    border: none;
+    border-radius: 7px;
+    box-shadow: var(--medical-shadow);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.medical-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 16px 32px -4px rgba(145, 158, 171, 0.16), 0px 0px 2px 0px rgba(145, 158, 171, 0.24);
+}
+
+.medical-card-header {
+    background: var(--medical-primary);
+    color: var(--medical-white);
+    padding: 20px 25px;
+    border-bottom: none;
+    font-weight: var(--medical-font-weight-bold);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--medical-font-family);
+}
+
+.medical-card-header i {
+    font-size: 1.2rem;
+}
+
+.medical-card-body {
+    padding: 25px 30px;
+}
+
+/* ========================================
+   表单组件 - PlainAdmin风格
+   ======================================== */
+.medical-form-label {
+    color: var(--medical-text);
+    font-weight: var(--medical-font-weight-bold);
+    margin-bottom: 8px;
+    font-size: var(--medical-font-size);
+    font-family: var(--medical-font-family);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.medical-form-label i {
+    color: var(--medical-primary);
+    font-size: 1rem;
+}
+
+.medical-form-control {
+    border: 1px solid var(--medical-border);
+    border-radius: 7px;
+    padding: 12px 16px;
+    font-size: var(--medical-font-size);
+    transition: all 0.3s ease;
+    width: 100%;
+    background-color: var(--medical-white);
+    color: var(--medical-text);
+    font-family: var(--medical-font-family);
+}
+
+.medical-form-control:focus {
+    border-color: var(--medical-primary);
+    box-shadow: 0 0 0 3px rgba(54, 92, 245, 0.1);
+    outline: none;
+}
+
+.medical-form-control::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+/* 优化select元素样式 */
+select.medical-form-control {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    appearance: none;
+}
+
+/* 针对较短内容的select元素，使用更合适的宽度 */
+.medical-form-control.compact {
+    max-width: 200px;
+}
+
+/* 文本区域样式优化 */
+textarea.medical-form-control {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+}
+
+/* ========================================
+   复选框和单选框样式 - PlainAdmin风格
+   ======================================== */
+.medical-check {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+    padding: 8px 12px;
+    border-radius: 7px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.medical-check:hover {
+    background-color: rgba(54, 92, 245, 0.05);
+}
+
+.medical-check-input {
+    margin-right: 8px;
+    accent-color: var(--medical-primary);
+    width: 16px;
+    height: 16px;
+}
+
+.medical-check-label {
+    color: var(--medical-text);
+    font-size: var(--medical-font-size);
+    margin-bottom: 0;
+    cursor: pointer;
+    font-family: var(--medical-font-family);
+    font-weight: var(--medical-font-weight-normal);
+}
+
+/* ========================================
+   按钮样式 - PlainAdmin风格
+   ======================================== */
+.medical-btn {
+    padding: 12px 24px;
+    border-radius: 7px;
+    font-weight: var(--medical-font-weight-bold);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-family: var(--medical-font-family);
+    font-size: var(--medical-font-size);
+    line-height: 1;
+}
+
+.medical-btn-primary {
+    background: var(--medical-primary);
+    color: var(--medical-white);
+}
+
+.medical-btn-primary:hover {
+    background: var(--medical-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--medical-shadow-hover);
+    color: var(--medical-white);
+    text-decoration: none;
+}
+
+.medical-btn-secondary {
+    background: var(--medical-border);
+    color: var(--medical-text);
+}
+
+.medical-btn-secondary:hover {
+    background: #d1d5db;
+    transform: translateY(-1px);
+}
+
+.medical-btn-lg {
+    padding: 16px 32px;
+    font-size: 16px;
+}
+
+.medical-btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+}
+
+/* ========================================
+   分组和分区样式
+   ======================================== */
+.medical-section {
+    border-left: 4px solid var(--medical-primary);
+    padding-left: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.medical-section-title {
+    color: var(--medical-primary);
+    font-weight: var(--medical-font-weight-bold);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--medical-font-family);
+}
+
+.medical-section-title i {
+    font-size: 1.1rem;
+}
+
+/* ========================================
+   输入组样式
+   ======================================== */
+.medical-input-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--medical-border);
+    border-radius: 7px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.medical-input-group:focus-within {
+    border-color: var(--medical-primary);
+    box-shadow: 0 0 0 3px rgba(54, 92, 245, 0.1);
+}
+
+.medical-input-group-text {
+    background-color: var(--medical-light);
+    color: var(--medical-text);
+    padding: 12px 16px;
+    border: none;
+    font-size: var(--medical-font-size);
+    font-weight: var(--medical-font-weight-normal);
+    font-family: var(--medical-font-family);
+}
+
+.medical-input-group .medical-form-control {
+    border: none;
+    border-radius: 0;
+}
+
+.medical-input-group .medical-form-control:focus {
+    box-shadow: none;
+}
+
+/* ========================================
+   分割线样式
+   ======================================== */
+.medical-divider {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--medical-border) 50%, transparent 100%);
+    margin: 1.5rem 0;
+}
+
+/* ========================================
+   表格样式 - PlainAdmin风格
+   ======================================== */
+.medical-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    background: var(--medical-white);
+    border-radius: 7px;
+    overflow: hidden;
+    box-shadow: var(--medical-shadow);
+}
+
+.medical-table th,
+.medical-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--medical-border);
+    font-family: var(--medical-font-family);
+}
+
+.medical-table th {
+    background-color: var(--medical-light);
+    color: var(--medical-text);
+    font-weight: var(--medical-font-weight-bold);
+    font-size: var(--medical-font-size);
+}
+
+.medical-table td {
+    font-size: var(--medical-font-size);
+    color: var(--medical-text);
+}
+
+.medical-table tbody tr:hover {
+    background-color: rgba(54, 92, 245, 0.02);
+}
+
+.medical-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ========================================
+   状态指示器 - PlainAdmin风格
+   ======================================== */
+.medical-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: var(--medical-font-weight-bold);
+    font-family: var(--medical-font-family);
+    line-height: 1.2;
+}
+
+.medical-status-normal {
+    background-color: rgba(33, 150, 83, 0.1);
+    color: var(--medical-success);
+}
+
+.medical-status-warning {
+    background-color: rgba(247, 200, 0, 0.1);
+    color: var(--medical-warning);
+}
+
+.medical-status-danger {
+    background-color: rgba(213, 1, 0, 0.1);
+    color: var(--medical-danger);
+}
+
+.medical-status-info {
+    background-color: rgba(54, 92, 245, 0.1);
+    color: var(--medical-primary);
+}
+
+/* ========================================
+   工具提示样式
+   ======================================== */
+.medical-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.medical-tooltip .medical-tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 7px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+    font-family: var(--medical-font-family);
+}
+
+.medical-tooltip:hover .medical-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* ========================================
+   响应式设计
+   ======================================== */
+@media (max-width: 768px) {
+    .medical-container {
+        padding: 10px;
+    }
+    
+    .medical-card-body {
+        padding: 20px 15px;
+    }
+    
+    .medical-card-header {
+        padding: 15px 20px;
+    }
+    
+    .medical-check {
+        margin-right: 0.5rem;
+        margin-bottom: 0.25rem;
+        padding: 6px 10px;
+    }
+    
+    .medical-btn {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+    
+    .medical-form-control {
+        padding: 10px 14px;
+    }
+    
+    .medical-table th,
+    .medical-table td {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .medical-container {
+        padding: 5px;
+    }
+    
+    .medical-card-body {
+        padding: 15px 10px;
+    }
+    
+    .medical-card-header {
+        padding: 12px 15px;
+        font-size: 1rem;
+    }
+    
+    .medical-btn {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+}
+
+/* ========================================
+   动画效果
+   ======================================== */
+@keyframes medical-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.medical-fade-in {
+    animation: medical-fadeIn 0.3s ease-out;
+}
+
+/* ========================================
+   打印样式
+   ======================================== */
+@media print {
+    .medical-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        break-inside: avoid;
+    }
+    
+    .medical-card-header {
+        background: #f5f5f5 !important;
+        color: #333 !important;
+    }
+    
+    .medical-btn {
+        display: none;
+    }
+}

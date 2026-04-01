@@ -1,0 +1,734 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.AuditLog.IndexModel
+
+@{
+    ViewData["Title"] = "审计日志";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>📋 审计日志</h2>
+            <p class="text-muted">系统操作记录监控与分析 - 支持四级高风险操作验证</p>
+        </div>
+        <div class="col-auto">
+            <form method="post" asp-page-handler="Export" class="d-inline">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-download"></i> 导出日志
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 快速筛选卡片 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-bolt"></i> 快速筛选
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <!-- 时间快捷筛选 -->
+            <div class="row mb-3">
+                <div class="col-auto">
+                    <label class="form-label fw-bold">时间范围:</label>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { startDate = DateTime.Today.ToString("yyyy-MM-dd") })"
+                       class="btn btn-sm btn-outline-secondary">
+                        今天
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { startDate = DateTime.Today.AddDays(-7).ToString("yyyy-MM-dd") })"
+                       class="btn btn-sm btn-outline-secondary">
+                        近7天
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { startDate = DateTime.Today.AddDays(-30).ToString("yyyy-MM-dd") })"
+                       class="btn btn-sm btn-outline-secondary">
+                        近30天
+                    </a>
+                </div>
+            </div>
+
+            <!-- 模块快速筛选 -->
+            <div class="row mb-3">
+                <div class="col-auto">
+                    <label class="form-label fw-bold">模块:</label>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { selectedOperationModule = "Treatment" })"
+                       class="btn btn-sm @(Model.SelectedOperationModule == "Treatment" ? "btn-danger" : "btn-outline-danger")">
+                        🏥 诊疗业务
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { selectedOperationModule = "Prescription" })"
+                       class="btn btn-sm @(Model.SelectedOperationModule == "Prescription" ? "btn-warning" : "btn-outline-warning")">
+                        💊 处方管理
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { selectedOperationModule = "Herb" })"
+                       class="btn btn-sm @(Model.SelectedOperationModule == "Herb" ? "btn-success" : "btn-outline-success")">
+                        🌿 药材管理
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { selectedOperationModule = "Inventory" })"
+                       class="btn btn-sm @(Model.SelectedOperationModule == "Inventory" ? "btn-warning" : "btn-outline-warning")">
+                        📦 库存管理
+                    </a>
+                </div>
+            </div>
+
+            <!-- 风险等级快速筛选 -->
+            <div class="row mb-3">
+                <div class="col-auto">
+                    <label class="form-label fw-bold">风险等级:</label>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { riskLevel = "Low" })"
+                       class="btn btn-sm @(Model.RiskLevel == "Low" ? "btn-success" : "btn-outline-success")">
+                        🟢 低风险
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { riskLevel = "Medium" })"
+                       class="btn btn-sm @(Model.RiskLevel == "Medium" ? "btn-warning" : "btn-outline-warning")">
+                        🟡 中风险
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { riskLevel = "High" })"
+                       class="btn btn-sm @(Model.RiskLevel == "High" ? "btn-danger" : "btn-outline-danger")">
+                        🔴 高风险
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { riskLevel = "Critical" })"
+                       class="btn btn-sm @(Model.RiskLevel == "Critical" ? "btn-dark" : "btn-outline-dark")">
+                        ⚫ 极高风险
+                    </a>
+                </div>
+            </div>
+
+            <!-- 验证级别快速筛选 -->
+            <div class="row">
+                <div class="col-auto">
+                    <label class="form-label fw-bold">验证级别:</label>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { verificationLevel = "Level1" })"
+                       class="btn btn-sm @(Model.VerificationLevel == "Level1" ? "btn-success" : "btn-outline-success")">
+                        ① 一级验证
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { verificationLevel = "Level2" })"
+                       class="btn btn-sm @(Model.VerificationLevel == "Level2" ? "btn-info" : "btn-outline-info")">
+                        ② 二级验证
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { verificationLevel = "Level3" })"
+                       class="btn btn-sm @(Model.VerificationLevel == "Level3" ? "btn-warning" : "btn-outline-warning")">
+                        ③ 三级验证
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { verificationLevel = "Level4" })"
+                       class="btn btn-sm @(Model.VerificationLevel == "Level4" ? "btn-danger" : "btn-outline-danger")">
+                        ④ 四级验证
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a href="@Url.Page("./Index", new { selectedStatus = "Failed" })"
+                       class="btn btn-sm @(Model.SelectedStatus == "Failed" ? "btn-danger" : "btn-outline-danger")">
+                        ❗ 失败操作
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 高级筛选卡片 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-filter"></i> 高级筛选
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!-- 第一行：4个筛选条件 -->
+                <div class="col-md-3">
+                    <label class="form-label">关键词搜索</label>
+                    <input type="text" class="form-control" name="searchString"
+                           value="@Model.SearchString" placeholder="用户、模块、详情、临床理由..." />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">操作类型</label>
+                    <select class="form-select" name="selectedOperationType">
+                        <option value="">所有类型</option>
+                        @foreach (var type in Model.OperationTypes)
+                        {
+                            <option value="@type" selected="@(type == Model.SelectedOperationType)">@GetOperationTypeDisplayName(type)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">操作模块</label>
+                    <select class="form-select" name="selectedOperationModule">
+                        <option value="">所有模块</option>
+                        @foreach (var module in Model.OperationModules)
+                        {
+                            <option value="@module" selected="@(module == Model.SelectedOperationModule)">@GetModuleDisplayName(module)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">操作状态</label>
+                    <select class="form-select" name="selectedStatus">
+                        <option value="">所有状态</option>
+                        @foreach (var status in Model.OperationStatuses)
+                        {
+                            <option value="@status" selected="@(status == Model.SelectedStatus)">@GetStatusDisplayName(status)</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- 第二行：4个筛选条件 -->
+                <div class="col-md-3">
+                    <label class="form-label">时间范围</label>
+                    <div class="input-group">
+                        <input type="date" class="form-control" id="startDate" name="startDate"
+                               value="@Model.StartDate?.ToString("yyyy-MM-dd")" />
+                        <span class="input-group-text">至</span>
+                        <input type="date" class="form-control" id="endDate" name="endDate"
+                               value="@Model.EndDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">风险等级</label>
+                    <select class="form-select" name="riskLevel">
+                        <option value="">所有等级</option>
+                        <option value="Low" selected="@(Model.RiskLevel == "Low")">🟢 低风险(0-4分)</option>
+                        <option value="Medium" selected="@(Model.RiskLevel == "Medium")">🟡 中风险(5-6分)</option>
+                        <option value="High" selected="@(Model.RiskLevel == "High")">🔴 高风险(7-9分)</option>
+                        <option value="Critical" selected="@(Model.RiskLevel == "Critical")">⚫ 极高风险(10+分)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">验证级别</label>
+                    <select class="form-select" name="verificationLevel">
+                        <option value="">所有级别</option>
+                        @foreach (var level in Model.VerificationLevels)
+                        {
+                            <option value="@level" selected="@(level == Model.VerificationLevel)">@GetVerificationLevelDisplayName(level)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">审核状态</label>
+                    <select class="form-select" name="reviewStatus">
+                        <option value="">所有状态</option>
+                        @foreach (var status in Model.ReviewStatuses)
+                        {
+                            <option value="@status" selected="@(status == Model.ReviewStatus)">@GetReviewStatusDisplayName(status)</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- 第三行：操作按钮和统计信息 -->
+                <div class="col-md-12">
+                    <div class="d-flex gap-2 align-items-center">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> 搜索
+                        </button>
+                        <a href="@Url.Page("./Index")" class="btn btn-outline-secondary">重置</a>
+                        <div class="ms-auto">
+                            <span class="text-muted small">
+                                共 @Model.Pagination.TotalCount 条记录
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 统计信息 -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.AuditLogs.Count</h4>
+                            <p>当前页记录</p>
+                        </div>
+                        <i class="fas fa-list fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.AuditLogs.Count(l => l.OperationStatus == "Success")</h4>
+                            <p>成功操作</p>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.AuditLogs.Count(l => l.OperationStatus == "Failed")</h4>
+                            <p>失败操作</p>
+                        </div>
+                        <i class="fas fa-exclamation-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.AuditLogs.Count(l => l.RiskScore.HasValue && l.RiskScore > 6)</h4>
+                            <p>高风险操作</p>
+                        </div>
+                        <i class="fas fa-shield-alt fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.AuditLogs.Count(l => l.VerificationLevel == "Level4")</h4>
+                            <p>四级验证</p>
+                        </div>
+                        <i class="fas fa-user-shield fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.Pagination.TotalCount</h4>
+                            <p>总记录数</p>
+                        </div>
+                        <i class="fas fa-database fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 日志列表 -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-history"></i> 操作日志列表
+                <span class="badge bg-secondary ms-2">@Model.Pagination.TotalCount</span>
+            </h5>
+            <div>
+                <span class="text-muted small me-3">
+                    第 @((Model.Pagination.CurrentPage - 1) * Model.Pagination.PageSize + 1) -
+                    @Math.Min(Model.Pagination.CurrentPage * Model.Pagination.PageSize, Model.Pagination.TotalCount) 条
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.AuditLogs.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>操作ID</th>
+                                <th>操作时间</th>
+                                <th>用户信息</th>
+                                <th>风险等级</th>
+                                <th>验证级别</th>
+                                <th>操作模块</th>
+                                <th>操作类型</th>
+                                <th>执行时长</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model.AuditLogs)
+                            {
+                                <tr>
+                                    <td><code>@log.LogId</code></td>
+                                    <td>
+                                        <small class="text-muted">@log.OperationTime.ToString("yyyy-MM-dd")</small>
+                                        <br>
+                                        <small>@log.OperationTime.ToString("HH:mm:ss")</small>
+                                    </td>
+                                    <td>
+                                        @if (log.User != null)
+                                        {
+                                            <div>
+                                                <strong>@log.User.FullName</strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-globe"></i> @log.IpAddress
+                                                </small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">系统用户</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (log.RiskScore.HasValue)
+                                        {
+                                            <span class="badge @GetRiskBadgeClass(log.RiskScore.Value)">
+                                                @GetRiskDisplayName(log.RiskScore.Value)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(log.VerificationLevel))
+                                        {
+                                            <span class="badge @GetVerificationLevelBadgeClass(log.VerificationLevel)">
+                                                @GetVerificationLevelDisplayName(log.VerificationLevel)
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetModuleBadgeClass(log.OperationModule)">
+                                            @GetModuleDisplayName(log.OperationModule)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetOperationTypeBadgeClass(log.OperationType)">
+                                            @GetOperationTypeDisplayName(log.OperationType)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (log.ExecutionDuration.HasValue)
+                                        {
+                                            <span class="@(log.ExecutionDuration > 1000 ? "text-warning fw-bold" : "text-success")">
+                                                <i class="fas fa-clock"></i> @log.ExecutionDuration.Value ms
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @(log.OperationStatus == "Success" ? "bg-success" : "bg-danger")">
+                                            <i class="fas @(log.OperationStatus == "Success" ? "fa-check" : "fa-times")"></i>
+                                            @GetStatusDisplayName(log.OperationStatus)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#detailsModal"
+                                                onclick="loadAuditLogDetails(@log.LogId)"
+                                                title="查看详情">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="row mt-4">
+                    <div class="col">
+                        <partial name="_Pagination" model="Model.Pagination" />
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">没有找到匹配的日志记录</p>
+                    <a href="@Url.Page("./Index")" class="btn btn-outline-primary">查看所有日志</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 详情模态框 -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle"></i> 审计日志详情
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2 text-muted">加载详情中...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadAuditLogDetails(logId) {
+            $('#detailsContent').html(`
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2 text-muted">加载详情中...</p>
+                </div>
+            `);
+
+            $('#detailsContent').load('/AuditLog/DetailsPartial?id=' + logId, function(response, status, xhr) {
+                if (status === "error") {
+                    $('#detailsContent').html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> 加载详情失败，请重试
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        // 日期选择器逻辑
+        $(document).ready(function() {
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+
+            if (startDateInput && endDateInput) {
+                // 初始化：如果没有开始日期，禁用结束日期
+                if (!startDateInput.value) {
+                    endDateInput.disabled = true;
+                    endDateInput.placeholder = "请先选择开始日期";
+                } else {
+                    endDateInput.min = startDateInput.value;
+                }
+
+                // 开始日期变化时更新结束日期的限制
+                startDateInput.addEventListener('change', function() {
+                    if (startDateInput.value) {
+                        endDateInput.disabled = false;
+                        endDateInput.min = startDateInput.value;
+                        endDateInput.placeholder = "";
+
+                        if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                            endDateInput.value = '';
+                        }
+                    } else {
+                        endDateInput.disabled = true;
+                        endDateInput.value = '';
+                        endDateInput.placeholder = "请先选择开始日期";
+                    }
+                });
+            }
+
+            // 显示操作结果消息
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>showAlert('success', '@Html.Raw(TempData["SuccessMessage"])');</text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>showAlert('error', '@Html.Raw(TempData["ErrorMessage"])');</text>
+        }
+        });
+
+        function showAlert(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('.container-fluid').prepend(alertHtml);
+
+            setTimeout(() => {
+                $('.alert').alert('close');
+            }, 5000);
+        }
+    </script>
+}
+
+@functions {
+    string GetModuleDisplayName(string module)
+    {
+        return module switch
+        {
+            "Appointment" => "🏥 预约管理",
+            "Herb" => "🌿 药材管理",
+            "Inventory" => "📦 库存管理",
+            "User" => "👤 用户管理",
+            "System" => "⚙️ 系统管理",
+            "AuditLog" => "📋 审计日志",
+            "Treatment" => "🏥 诊疗业务",
+            "Prescription" => "💊 处方管理",
+            _ => module
+        };
+    }
+
+    string GetModuleBadgeClass(string module)
+    {
+        return module switch
+        {
+            "Appointment" => "bg-primary",
+            "Herb" => "bg-success",
+            "Inventory" => "bg-warning",
+            "User" => "bg-info",
+            "System" => "bg-secondary",
+            "AuditLog" => "bg-dark",
+            "Treatment" => "bg-danger",
+            "Prescription" => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetOperationTypeDisplayName(string operationType)
+    {
+        return operationType switch
+        {
+            "Create" => "➕ 新增",
+            "Update" => "✏️ 修改",
+            "Delete" => "🗑️ 删除",
+            "View" => "👁️ 查看",
+            "Search" => "🔍 搜索",
+            "Export" => "📤 导出",
+            "Login" => "🔑 登录",
+            "Logout" => "🚪 登出",
+            _ => operationType
+        };
+    }
+
+    string GetOperationTypeBadgeClass(string operationType)
+    {
+        return operationType switch
+        {
+            "Create" => "bg-info",
+            "Update" => "bg-warning",
+            "Delete" => "bg-danger",
+            "View" => "bg-secondary",
+            "Search" => "bg-primary",
+            "Export" => "bg-success",
+            "Login" => "bg-dark",
+            "Logout" => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusDisplayName(string status)
+    {
+        return status switch
+        {
+            "Success" => "成功",
+            "Failed" => "失败",
+            _ => status
+        };
+    }
+
+    string GetVerificationLevelDisplayName(string level)
+    {
+        return level switch
+        {
+            "Level1" => "① 一级验证",
+            "Level2" => "② 二级验证",
+            "Level3" => "③ 三级验证",
+            "Level4" => "④ 四级验证",
+            _ => level
+        };
+    }
+
+    string GetVerificationLevelBadgeClass(string level)
+    {
+        return level switch
+        {
+            "Level1" => "bg-success",
+            "Level2" => "bg-info",
+            "Level3" => "bg-warning",
+            "Level4" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetReviewStatusDisplayName(string status)
+    {
+        return status switch
+        {
+            "Pending" => "⏳ 待审核",
+            "Approved" => "✅ 已批准",
+            "Rejected" => "❌ 已拒绝",
+            _ => status
+        };
+    }
+
+    string GetRiskDisplayName(int riskScore)
+    {
+        return riskScore switch
+        {
+            <= 4 => "🟢 低风险",
+            <= 6 => "🟡 中风险",
+            <= 9 => "🔴 高风险",
+            _ => "⚫ 极高风险"
+        };
+    }
+
+    string GetRiskBadgeClass(int riskScore)
+    {
+        return riskScore switch
+        {
+            <= 4 => "bg-success",
+            <= 6 => "bg-warning",
+            <= 9 => "bg-danger",
+            _ => "bg-dark"
+        };
+    }
+}

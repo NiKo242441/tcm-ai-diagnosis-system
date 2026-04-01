@@ -1,0 +1,774 @@
+﻿@page "/Inventory/Edit/{id}"
+@model TcmAiDiagnosis.Pages.Inventory.EditModel
+@{
+    ViewData["Title"] = "编辑库存项";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- 页面头部 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Inventory">库存管理</a></li>
+                    <li class="breadcrumb-item active">库存项详情</li>
+                </ol>
+            </nav>
+            <h2 class="mb-0">编辑库存项</h2>
+            <p class="text-muted">批次号: @Model.InventoryItem?.BatchNumber</p>
+        </div>
+        <div>
+            <a href="/Inventory" class="btn btn-outline-primary">
+                <i class="fas fa-list"></i> 返回列表
+            </a>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- 基本信息卡片 -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>基本信息
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="editForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="InventoryItem.Id" />
+                        <input type="hidden" asp-for="InventoryItem.TenantId" />
+                        <input type="hidden" asp-for="InventoryItem.CreatedAt" />
+                        <input type="hidden" asp-for="InventoryItem.CreatedBy" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.BatchNumber" class="form-label required">批次号</label>
+                                    <input asp-for="InventoryItem.BatchNumber" class="form-control" required />
+                                    <span asp-validation-for="InventoryItem.BatchNumber" class="text-danger small"></span>
+                                    <div class="form-text">批次号必须唯一，用于追踪库存</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.HerbId" class="form-label required">药材名称</label>
+                                    <select asp-for="InventoryItem.HerbId" class="form-select" required>
+                                        <option value="">请选择药材</option>
+                                        @foreach (var herb in Model.Herbs)
+                                        {
+                                            <option value="@herb.Id" selected="@(herb.Id == Model.InventoryItem.HerbId)">
+                                                @herb.Name
+                                            </option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="InventoryItem.HerbId" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.CurrentQuantity" class="form-label required">当前库存</label>
+                                    <div class="input-group">
+                                        <input asp-for="InventoryItem.CurrentQuantity" type="number" class="form-control" step="0.01" min="0" required />
+                                        <span class="input-group-text">@Model.InventoryItem?.Unit</span>
+                                    </div>
+                                    <span asp-validation-for="InventoryItem.CurrentQuantity" class="text-danger small"></span>
+                                    <div class="form-text">初始库存: @Model.InventoryItem?.InitialQuantity @Model.InventoryItem?.Unit</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.PurchasePrice" class="form-label required">采购单价</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">￥</span>
+                                        <input asp-for="InventoryItem.PurchasePrice" type="number" class="form-control" step="0.01" min="0" required />
+                                    </div>
+                                    <span asp-validation-for="InventoryItem.PurchasePrice" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.SalePrice" class="form-label">销售单价</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">￥</span>
+                                        <input asp-for="InventoryItem.SalePrice" type="number" class="form-control" step="0.01" min="0" />
+                                    </div>
+                                    <span asp-validation-for="InventoryItem.SalePrice" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.StorageLocation" class="form-label">库存位置</label>
+                                    <input asp-for="InventoryItem.StorageLocation" class="form-control" />
+                                    <span asp-validation-for="InventoryItem.StorageLocation" class="text-danger small"></span>
+                                    <div class="form-text">例如: A区-1排-2层</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.SupplierName" class="form-label">供应商</label>
+                                    <input asp-for="InventoryItem.SupplierName" class="form-control" />
+                                    <span asp-validation-for="InventoryItem.SupplierName" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.ProductionDate" class="form-label">生产日期</label>
+                                    <input asp-for="InventoryItem.ProductionDate" type="date" class="form-control" />
+                                    <span asp-validation-for="InventoryItem.ProductionDate" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.ExpiryDate" class="form-label">有效期至</label>
+                                    <input asp-for="InventoryItem.ExpiryDate" type="date" class="form-control" />
+                                    <span asp-validation-for="InventoryItem.ExpiryDate" class="text-danger small"></span>
+                                    @if (Model.InventoryItem?.ExpiryDate.HasValue == true)
+                                    {
+                                        var daysLeft = (Model.InventoryItem.ExpiryDate.Value - DateTime.Now).Days;
+                                        var badgeClass = daysLeft <= 0 ? "bg-danger" : daysLeft <= 30 ? "bg-warning" : "bg-success";
+                                        <div class="mt-1">
+                                            <span class="badge @badgeClass">
+                                                @if (daysLeft <= 0)
+                                                {
+                                                    <text>已过期 @Math.Abs(daysLeft) 天</text>
+                                                }
+                                                else
+                                                {
+                                                    <text>剩余 @daysLeft 天</text>
+                                                }
+                                            </span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="InventoryItem.QualityStatus" class="form-label">质量状态</label>
+                                    <select asp-for="InventoryItem.QualityStatus" class="form-select">
+                                        <option value="Pending">待检验</option>
+                                        <option value="Qualified">合格</option>
+                                        <option value="Unqualified">不合格</option>
+                                    </select>
+                                    <span asp-validation-for="InventoryItem.QualityStatus" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">库存状态</label>
+                                    <div>
+                                        @if (Model.InventoryItem != null)
+                                        {
+                                            <span class="badge @GetStatusBadgeClass(Model.InventoryItem.Status) fs-6">
+                                                @GetStatusDescription(Model.InventoryItem.Status)
+                                            </span>
+                                        }
+                                    </div>
+                                    <div class="form-text">状态根据库存数量和有效期自动计算</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="InventoryItem.Remark" class="form-label">备注</label>
+                            <textarea asp-for="InventoryItem.Remark" class="form-control" rows="3" placeholder="请输入库存项的相关备注信息..."></textarea>
+                            <span asp-validation-for="InventoryItem.Remark" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="InventoryItem.IsActive" class="form-check-input" />
+                            <label asp-for="InventoryItem.IsActive" class="form-check-label">启用此库存项</label>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 库存操作历史 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>最近操作记录
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentOperations?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>操作类型</th>
+                                        <th>数量</th>
+                                        <th>操作前</th>
+                                        <th>操作后</th>
+                                        <th>操作人</th>
+                                        <th>时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var operation in Model.RecentOperations)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge @GetOperationBadgeClass(operation.OperationType)">
+                                                    @GetOperationTypeName(operation.OperationType)
+                                                </span>
+                                            </td>
+                                            <td class="@(operation.Quantity > 0 ? "text-success" : "text-danger") fw-bold">
+                                                @(operation.Quantity > 0 ? "+" : "")@operation.Quantity
+                                            </td>
+                                            <td>@operation.BeforeQuantity</td>
+                                            <td>@operation.AfterQuantity</td>
+                                            <td>@(operation.Operator?.UserName ?? "系统")</td>
+                                            <td>@operation.OperatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="/Inventory/Operations/@Model.InventoryItem?.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-list me-1"></i>查看完整操作历史
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-history fa-2x mb-3"></i>
+                            <p>暂无操作记录</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- 操作面板 -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>操作面板
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="submit" form="editForm" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>保存更改
+                        </button>
+                        <a href="/Inventory/Details/@Model.InventoryItem?.Id" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>取消编辑
+                        </a>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3">快速操作</h6>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-success" onclick="showQuickOperation('PurchaseIn')">
+                            <i class="fas fa-arrow-down me-2"></i>快速入库
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="showQuickOperation('SaleOut')">
+                            <i class="fas fa-arrow-up me-2"></i>快速出库
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="showQuickOperation('Adjust')">
+                            <i class="fas fa-adjust me-2"></i>库存调整
+                        </button>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="mb-3">库存状态</h6>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>库存健康度:</span>
+                            <span class="badge @GetHealthBadgeClass(Model.HealthScore)">@Model.HealthScore%</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar @GetHealthProgressClass(Model.HealthScore)"
+                                 style="width: @Model.HealthScore%"
+                                 role="progressbar"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="updateInventoryStatus()">
+                            <i class="fas fa-sync-alt me-1"></i>更新库存状态
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 库存统计 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>库存统计
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="text-primary fs-4 fw-bold">@Model.InventoryItem?.CurrentQuantity</div>
+                                <div class="text-muted small">当前库存</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="text-success fs-4 fw-bold">@Model.InventoryItem?.InitialQuantity</div>
+                                <div class="text-muted small">初始库存</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="text-info fs-4 fw-bold">￥@(Model.InventoryItem?.PurchasePrice.ToString("F2") ?? "0.00")</div>
+                                <div class="text-muted small">采购单价</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="border rounded p-3">
+                                <div class="text-warning fs-4 fw-bold">￥@(Model.GetTotalValue().ToString("F2"))</div>
+                                <div class="text-muted small">库存价值</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 预警信息 -->
+            @if (Model.ActiveAlerts?.Any() == true)
+            {
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>库存预警
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var alert in Model.ActiveAlerts)
+                        {
+                            <div class="alert alert-warning alert-dismissible fade show mb-2" role="alert">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-bell me-2"></i>
+                                    <div class="flex-grow-1">
+                                        <small>@alert.AlertMessage</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div class="text-center">
+                            <a href="/Inventory/InventoryAlertsPage" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-list me-1"></i>查看所有预警
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 快速操作模态框 -->
+<div class="modal fade" id="quickOperationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickOperationModalTitle">快速操作</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="quickOperationForm" method="post">
+                <input type="hidden" name="inventoryItemId" value="@Model.InventoryItem?.Id" />
+                <input type="hidden" name="operationType" id="quickOperationType" />
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="quickQuantity" class="form-label">数量</label>
+                        <input type="number" class="form-control" id="quickQuantity" name="quantity" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quickReferenceNumber" class="form-label">参考单号</label>
+                        <input type="text" class="form-control" id="quickReferenceNumber" name="referenceNumber">
+                    </div>
+                    <div class="mb-3">
+                        <label for="quickReason" class="form-label">原因/备注</label>
+                        <textarea class="form-control" id="quickReason" name="reason" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">确认操作</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Normal" => "bg-success",
+            "LowStock" => "bg-warning",
+            "Expiring" => "bg-danger",
+            "Expired" => "bg-dark",
+            "OutOfStock" => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusDescription(string status)
+    {
+        return status switch
+        {
+            "Normal" => "正常",
+            "LowStock" => "低库存",
+            "Expiring" => "临期",
+            "Expired" => "过期",
+            "OutOfStock" => "缺货",
+            _ => "未知"
+        };
+    }
+
+    string GetOperationBadgeClass(string operationType)
+    {
+        return operationType switch
+        {
+            "PurchaseIn" => "bg-success",
+            "SaleOut" => "bg-danger",
+            "Adjust" => "bg-info",
+            "Transfer" => "bg-warning",
+            "Return" => "bg-primary",
+            "Loss" => "bg-dark",
+            "Check" => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetOperationTypeName(string operationType)
+    {
+        return operationType switch
+        {
+            "PurchaseIn" => "采购入库",
+            "SaleOut" => "销售出库",
+            "Adjust" => "库存调整",
+            "Transfer" => "库存调拨",
+            "Return" => "退货入库",
+            "Loss" => "库存报损",
+            "Check" => "库存盘点",
+            _ => "未知操作"
+        };
+    }
+
+    string GetHealthBadgeClass(int healthScore)
+    {
+        return healthScore >= 90 ? "bg-success" :
+               healthScore >= 70 ? "bg-info" :
+               healthScore >= 50 ? "bg-warning" : "bg-danger";
+    }
+
+    string GetHealthProgressClass(int healthScore)
+    {
+        return healthScore >= 90 ? "bg-success" :
+               healthScore >= 70 ? "bg-info" :
+               healthScore >= 50 ? "bg-warning" : "bg-danger";
+    }
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // 页面加载完成后的初始化
+        $(document).ready(function() {
+            // 初始化表单验证
+            initializeFormValidation();
+
+            // 初始化日期选择器
+            initializeDatePickers();
+
+            // 自动计算库存价值
+            calculateInventoryValue();
+        });
+
+        // 初始化表单验证
+        function initializeFormValidation() {
+            const form = $('#editForm');
+            form.validate({
+                rules: {
+                    'InventoryItem.BatchNumber': {
+                        required: true,
+                        minlength: 2
+                    },
+                    'InventoryItem.HerbId': {
+                        required: true
+                    },
+                    'InventoryItem.CurrentQuantity': {
+                        required: true,
+                        min: 0
+                    },
+                    'InventoryItem.PurchasePrice': {
+                        required: true,
+                        min: 0
+                    }
+                },
+                messages: {
+                    'InventoryItem.BatchNumber': {
+                        required: "请输入批次号",
+                        minlength: "批次号至少需要2个字符"
+                    },
+                    'InventoryItem.HerbId': {
+                        required: "请选择药材"
+                    },
+                    'InventoryItem.CurrentQuantity': {
+                        required: "请输入当前库存数量",
+                        min: "库存数量不能为负数"
+                    },
+                    'InventoryItem.PurchasePrice': {
+                        required: "请输入采购单价",
+                        min: "采购单价不能为负数"
+                    }
+                },
+                errorClass: "is-invalid",
+                validClass: "is-valid",
+                errorPlacement: function(error, element) {
+                    error.addClass('text-danger small');
+                    error.insertAfter(element);
+                }
+            });
+        }
+
+        // 初始化日期选择器
+        function initializeDatePickers() {
+            // 设置生产日期和有效期的最大最小日期
+            const today = new Date().toISOString().split('T')[0];
+            $('input[type="date"]').attr('max', '2099-12-31');
+
+            // 生产日期不能超过今天
+            $('#InventoryItem_ProductionDate').attr('max', today);
+        }
+
+        // 计算库存价值
+        function calculateInventoryValue() {
+            const quantity = parseFloat($('#InventoryItem_CurrentQuantity').val()) || 0;
+            const price = parseFloat($('#InventoryItem_PurchasePrice').val()) || 0;
+            const totalValue = quantity * price;
+
+            // 更新显示（如果有显示元素的话）
+            $('.inventory-value').text('￥' + totalValue.toFixed(2));
+        }
+
+        // 监听数量和价值的变化
+        $('#InventoryItem_CurrentQuantity, #InventoryItem_PurchasePrice').on('input', function() {
+            calculateInventoryValue();
+        });
+
+        // 显示快速操作模态框
+        function showQuickOperation(operationType) {
+            const titles = {
+                'PurchaseIn': '快速入库',
+                'SaleOut': '快速出库',
+                'Adjust': '库存调整'
+            };
+
+            $('#quickOperationModalTitle').text(titles[operationType] || '快速操作');
+            $('#quickOperationType').val(operationType);
+
+            // 重置表单
+            $('#quickQuantity').val('');
+            $('#quickReferenceNumber').val('');
+            $('#quickReason').val('');
+
+            $('#quickOperationModal').modal('show');
+        }
+
+        // 处理快速操作表单提交
+        $('#quickOperationForm').on('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.html();
+
+            // 显示加载状态
+            submitBtn.html('<i class="fas fa-spinner fa-spin"></i> 处理中...').prop('disabled', true);
+
+            fetch('/Inventory?handler=Operation', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.reload();
+                } else {
+                    return response.text();
+                }
+            })
+            .then(data => {
+                if (data) {
+                    try {
+                        const result = JSON.parse(data);
+                        if (result.success) {
+                            $('#quickOperationModal').modal('hide');
+                            showAlert('success', result.message || '操作成功');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showAlert('error', result.message || '操作失败');
+                        }
+                    } catch (e) {
+                        window.location.reload();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('操作失败:', error);
+                showAlert('error', '操作失败，请重试');
+            })
+            .finally(() => {
+                submitBtn.html(originalText).prop('disabled', false);
+            });
+        });
+
+        // 更新库存状态
+        function updateInventoryStatus() {
+            if (confirm('确定要更新此库存项的状态吗？状态将根据当前库存数量和有效期重新计算。')) {
+                fetch('/Inventory/Edit/@Model.InventoryItem?.Id?handler=UpdateStatus', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showAlert('success', '库存状态更新成功');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        throw new Error('状态更新失败');
+                    }
+                })
+                .catch(error => {
+                    console.error('状态更新失败:', error);
+                    showAlert('error', '状态更新失败，请重试');
+                });
+            }
+        }
+
+        // 显示消息提示
+        function showAlert(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' :
+                              type === 'warning' ? 'alert-warning' :
+                              type === 'info' ? 'alert-info' : 'alert-danger';
+
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'} me-2"></i>
+                        <div class="flex-grow-1">${message}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </div>
+            `;
+
+            // 插入到页面顶部
+            $('.container-fluid').prepend(alertHtml);
+
+            // 自动关闭成功和信息消息
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    $('.alert').alert('close');
+                }, 5000);
+            }
+        }
+
+        // 表单离开确认
+        let formChanged = false;
+        $('input, select, textarea').on('change', function() {
+            formChanged = true;
+        });
+
+        $('#editForm').on('submit', function() {
+            formChanged = false;
+        });
+
+        $(window).on('beforeunload', function() {
+            if (formChanged) {
+                return '您有未保存的更改，确定要离开吗？';
+            }
+        });
+
+        // 库存数量验证
+        $('#InventoryItem_CurrentQuantity').on('blur', function() {
+            const value = parseFloat($(this).val());
+            if (value < 0) {
+                $(this).addClass('is-invalid');
+                showAlert('warning', '库存数量不能为负数');
+            }
+        });
+
+        // 价格验证
+        $('#InventoryItem_PurchasePrice, #InventoryItem_SalePrice').on('blur', function() {
+            const value = parseFloat($(this).val());
+            if (value < 0) {
+                $(this).addClass('is-invalid');
+                showAlert('warning', '价格不能为负数');
+            }
+        });
+
+        // 有效期验证
+        $('#InventoryItem_ExpiryDate').on('change', function() {
+            const expiryDate = new Date($(this).val());
+            const productionDate = new Date($('#InventoryItem_ProductionDate').val());
+
+            if ($('#InventoryItem_ProductionDate').val() && expiryDate < productionDate) {
+                $(this).addClass('is-invalid');
+                showAlert('warning', '有效期不能早于生产日期');
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        });
+
+        // 键盘快捷键
+        $(document).on('keydown', function(e) {
+            // Ctrl + S: 保存
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                $('#editForm').submit();
+            }
+            // Esc: 取消
+            if (e.key === 'Escape') {
+                window.location.href = '/Inventory/Details/@Model.InventoryItem?.Id';
+            }
+        });
+    </script>
+}

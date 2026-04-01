@@ -1,0 +1,249 @@
+@page "{patientId:int}"
+@model TcmAiDiagnosis.Web.Areas.Doctor.Pages.Patient.VisitSeriesModel
+@{
+    ViewData["Title"] = "就诊系列列表";
+}
+
+<div class="container-fluid">
+    <!-- 页面标题 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">就诊系列列表</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-page="/Index">首页</a></li>
+                    <li class="breadcrumb-item"><a asp-page="Index">患者管理</a></li>
+                    <li class="breadcrumb-item"><a asp-page="Detail" asp-route-patientId="@Model.Patient.Id">@Model.Patient.FullName</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">就诊系列</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- 患者基本信息卡片 -->
+    <div class="medical-card mb-4">
+        <div class="medical-card-header">
+            <i class="fas fa-user"></i>
+            患者基本信息
+        </div>
+        <div class="medical-card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="info-item">
+                        <label class="info-label">姓名</label>
+                        <div class="info-value">@Model.Patient.FullName</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-item">
+                        <label class="info-label">性别</label>
+                        <div class="info-value">@Model.Patient.Gender</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-item">
+                        <label class="info-label">年龄</label>
+                        <div class="info-value">
+                            @{
+                                var age = Model.Patient.DateOfBirth.HasValue ? DateTime.Now.Year - Model.Patient.DateOfBirth.Value.Year : 0;
+                            }
+                            @age 岁
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="info-item">
+                        <label class="info-label">联系方式</label>
+                        <div class="info-value">@Model.Patient.PhoneNumber</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 就诊系列信息卡片 -->
+    <div class="medical-card">
+        <div class="medical-card-header">
+            <i class="fas fa-clipboard-list"></i>
+            就诊系列信息
+            <div class="ms-auto">
+                @if (Model.ActiveSeries != null)
+                {
+                    <!-- 有进行中的就诊系列，提供复诊和新系列选项 -->
+                    <div class="btn-group" role="group">
+                        <button type="button" class="medical-btn medical-btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-stethoscope"></i>
+                            开始问诊
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="/Doctor/Visits/Create/@Model.Patient.Id/@Model.ActiveSeries.SeriesId">
+                                    <i class="fas fa-redo me-2"></i>继续复诊
+                                    <small class="text-muted d-block">在当前系列中添加新的就诊记录</small>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="confirmNewSeries(@Model.Patient.Id)">
+                                    <i class="fas fa-plus me-2"></i>开启新系列
+                                    <small class="text-muted d-block">结束当前系列并开始新的就诊系列</small>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <!-- 无进行中的就诊系列，直接开始新就诊 -->
+                    <a href="/Doctor/Visits/Create/@Model.Patient.Id" class="medical-btn medical-btn-success">
+                        <i class="fas fa-stethoscope"></i>
+                        开始就诊
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="medical-card-body">
+            @if (Model.ActiveSeries != null)
+            {
+                <!-- 当前进行中的就诊系列 -->
+                <div class="medical-section">
+                    <div class="medical-section-title">
+                        <i class="fas fa-play-circle text-success"></i>
+                        当前进行中的就诊系列
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <div class="alert alert-success d-flex align-items-center">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <div>
+                                    <strong>系列开始时间：</strong>@Model.ActiveSeries.SeriesStartDate.ToString("yyyy-MM-dd HH:mm") <br />
+                                    <strong>主治医生：</strong>@(Model.ActiveSeries.DoctorUser?.FullName ?? "未知") <br />
+                                    <strong>就诊次数：</strong>@(Model.ActiveSeries.Visits?.Count ?? 0) 次
+                                    @if (Model.ActiveSeries.NextFollowUpDate.HasValue)
+                                    {
+                                        <br /><strong>下次随访时间：</strong>@Model.ActiveSeries.NextFollowUpDate.Value.ToString("yyyy-MM-dd")
+                                    }
+                                    @if (Model.ActiveSeries.NextFollowUpVisitDate.HasValue)
+                                    {
+                                        <br /><strong>下次复诊时间：</strong>@Model.ActiveSeries.NextFollowUpVisitDate.Value.ToString("yyyy-MM-dd")
+                                    }
+                                </div>
+                                <div class="ms-auto">
+                                    <a href="/Doctor/VisitSeries/Details/@Model.ActiveSeries.SeriesId" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye"></i> 查看详情
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- 无进行中的就诊系列 -->
+                <div class="medical-section">
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <div>
+                            该患者当前没有进行中的就诊系列，可以开始新的就诊。
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.AllSeries != null && Model.AllSeries.Any())
+            {
+                <!-- 历史就诊系列 -->
+                <div class="medical-section">
+                    <div class="medical-section-title">
+                        <i class="fas fa-history"></i>
+                        历史就诊系列
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>系列开始时间</th>
+                                    <th>系列结束时间</th>
+                                    <th>主治医生</th>
+                                    <th>就诊次数</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var series in Model.AllSeries)
+                                {
+                                    <tr>
+                                        <td>@series.SeriesStartDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td>
+                                            @if (series.SeriesEndDate.HasValue)
+                                            {
+                                                @series.SeriesEndDate.Value.ToString("yyyy-MM-dd HH:mm")
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">进行中</span>
+                                            }
+                                        </td>
+                                        <td>@(series.DoctorUser?.FullName ?? "未知")</td>
+                                        <td>@(series.Visits?.Count ?? 0) 次</td>
+                                        <td>
+                                            @if (series.Status == 0)
+                                            {
+                                                <span class="badge bg-success">进行中</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">已结束</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a href="/Doctor/VisitSeries/Details/@series.SeriesId" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> 查看详情
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- 无就诊系列 -->
+                <div class="medical-section">
+                    <div class="alert alert-warning d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <div>
+                            该患者还没有任何就诊系列记录。
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="text-end mt-4">
+        <a asp-page="Index" class="medical-btn medical-btn-secondary me-3">
+            <i class="fas fa-arrow-left"></i>
+            返回患者列表
+        </a>
+        <a asp-page="Detail" asp-route-patientId="@Model.Patient.Id" class="medical-btn medical-btn-info">
+            <i class="fas fa-user"></i>
+            查看患者详情
+        </a>
+    </div>
+</div>
+
+<script>
+    // 确认开启新系列
+    function confirmNewSeries(patientId) {
+        if (confirm('确定要开启新的就诊系列吗？\n\n这将会结束当前进行中的就诊系列，并开始一个全新的就诊系列。此操作不可撤销。')) {
+            // 跳转到创建就诊页面，不传递seriesId表示开启新系列
+            window.location.href = `/Doctor/Visits/Create/${patientId}`;
+        }
+    }
+</script>

@@ -1,0 +1,206 @@
+﻿@page "{id:int}"
+@model TcmAiDiagnosis.Web.Pages.Appointments.EditModel
+@{
+    ViewData["Title"] = "修改预约信息";
+}
+
+<h2 class="mb-4">修改预约信息</h2>
+
+<form method="post" class="p-4 border rounded bg-light shadow-sm">
+    <input asp-for="Appointment.AppointmentId" type="hidden" />
+    <input asp-for="Appointment.PatientGuid" type="hidden" />
+    <input asp-for="Appointment.DoctorId" type="hidden" />
+    <input asp-for="Appointment.DoctorName" type="hidden" />
+    <input asp-for="Appointment.ClinicId" type="hidden" />
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">基本信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">预约ID</label>
+                        <input value="@Model.Appointment.AppointmentId" class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">患者GUID</label>
+                        <input value="@Model.Appointment.PatientGuid" class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">医生</label>
+                        <input value="@(Model.Appointment.DoctorName ?? Model.Appointment.DoctorId.ToString())"
+                               class="form-control" readonly />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">预约详情</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">预约时间</label>
+                        <input value="@Model.Appointment.AppointmentTime.ToString("yyyy-MM-dd HH:mm")"
+                               class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">预约类型</label>
+                        <input value="@Model.Appointment.AppointmentType" class="form-control" readonly />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">预约时长</label>
+                        <input value="@Model.Appointment.Duration 分钟" class="form-control" readonly />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="card-title mb-0">状态管理</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Appointment.Status" class="form-label">当前状态</label>
+                        <select asp-for="Appointment.Status" class="form-select">
+                            <option value="待就诊">待就诊</option>
+                            <option value="已完成">已完成</option>
+                            <option value="已取消">已取消</option>
+                        </select>
+                        <span asp-validation-for="Appointment.Status" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="Appointment.ContactPhone" class="form-label">联系电话</label>
+                        <input asp-for="Appointment.ContactPhone" class="form-control" />
+                        <span asp-validation-for="Appointment.ContactPhone" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Appointment.Symptoms" class="form-label">症状描述</label>
+                <textarea asp-for="Appointment.Symptoms" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Appointment.Symptoms" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Appointment.Remarks" class="form-label">备注</label>
+                <textarea asp-for="Appointment.Remarks" class="form-control" rows="2"></textarea>
+            </div>
+
+            @if (Model.Appointment.Status == "已取消" && !string.IsNullOrEmpty(Model.Appointment.CancelReason))
+            {
+                <div class="alert alert-warning">
+                    <strong>取消原因：</strong> @Model.Appointment.CancelReason
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <div>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle"></i> 保存修改
+            </button>
+            <a asp-page="Index" class="btn btn-secondary ms-2">
+                <i class="bi bi-arrow-left"></i> 返回列表
+            </a>
+        </div>
+
+        @if (Model.Appointment.Status == "待就诊" && Model.Appointment.CanBeCancelled())
+        {
+            <button type="button" class="btn btn-outline-danger" onclick="showCancelModal()">
+                <i class="bi bi-x-circle"></i> 取消预约
+            </button>
+        }
+    </div>
+</form>
+
+<!-- 取消预约模态框 -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">取消预约</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">取消原因</label>
+                    <textarea class="form-control" id="cancelReason" rows="3"
+                              placeholder="请输入取消预约的原因..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-danger" onclick="submitCancel()">确认取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function showCancelModal() {
+            $('#cancelModal').modal('show');
+        }
+
+        function submitCancel() {
+            const reason = $('#cancelReason').val();
+            if (!reason) {
+                alert('请输入取消原因');
+                return;
+            }
+
+            // 调用取消API
+            fetch(`/api/Appointments/@Model.Appointment.AppointmentId/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reason: reason })
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('取消失败');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('取消失败');
+            });
+        }
+
+        // 状态变化时的提示
+        $('#Appointment_Status').change(function() {
+            const newStatus = $(this).val();
+            const originalStatus = '@Model.Appointment.Status';
+
+            if (newStatus === '已取消' && originalStatus !== '已取消') {
+                if (!confirm('确定要将预约状态改为"已取消"吗？')) {
+                    $(this).val(originalStatus);
+                    return;
+                }
+                showCancelModal();
+                $(this).val(originalStatus); // 重置选择，等待模态框确认
+            }
+        });
+    </script>
+}

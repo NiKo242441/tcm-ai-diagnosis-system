@@ -1,0 +1,317 @@
+﻿@page
+@model TcmAiDiagnosis.Pages.Inventory.CreateModel
+@{
+    ViewData["Title"] = "添加库存";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-center mb-4">
+                <h2>添加库存</h2>
+                <a href="/Inventory" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回列表
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">库存信息</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="createForm">
+                        <!-- 表单内容保持不变 -->
+                        <div class="row">
+                            <!-- 基本信息 -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="BatchNumber" class="form-label required">批次号</label>
+                                    <input type="text" class="form-control" id="BatchNumber" name="BatchNumber"
+                                           value="@Model.Input?.BatchNumber" required maxlength="100"
+                                           placeholder="请输入批次号">
+                                    <span class="text-danger field-validation-valid" data-valmsg-for="BatchNumber" data-valmsg-replace="true"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="HerbId" class="form-label required">药材名称</label>
+                                    <select class="form-select" id="HerbId" name="HerbId" required>
+                                        <option value="">请选择药材</option>
+                                        @if (Model.Herbs != null)
+                                        {
+                                            foreach (var herb in Model.Herbs)
+                                            {
+                                                <option value="@herb.Id" selected="@(Model.Input?.HerbId == herb.Id)">
+                                                    @herb.Name
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                    <span class="text-danger field-validation-valid" data-valmsg-for="HerbId" data-valmsg-replace="true"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="CurrentQuantity" class="form-label required">库存数量</label>
+                                            <input type="number" class="form-control" id="CurrentQuantity" name="CurrentQuantity"
+                                                   value="@(Model.Input?.CurrentQuantity.ToString() ?? "0")" step="0.01" min="0" required
+                                                   placeholder="0.00">
+                                            <span class="text-danger field-validation-valid" data-valmsg-for="CurrentQuantity" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="Unit" class="form-label required">计量单位</label>
+                                            <select class="form-select" id="Unit" name="Unit" required>
+                                                <option value="克" selected="@(Model.Input?.Unit == "克")">克</option>
+                                                <option value="千克" selected="@(Model.Input?.Unit == "千克")">千克</option>
+                                                <option value="斤" selected="@(Model.Input?.Unit == "斤")">斤</option>
+                                                <option value="两" selected="@(Model.Input?.Unit == "两")">两</option>
+                                                <option value="毫升" selected="@(Model.Input?.Unit == "毫升")">毫升</option>
+                                                <option value="升" selected="@(Model.Input?.Unit == "升")">升</option>
+                                                <option value="包" selected="@(Model.Input?.Unit == "包")">包</option>
+                                                <option value="瓶" selected="@(Model.Input?.Unit == "瓶")">瓶</option>
+                                            </select>
+                                            <span class="text-danger field-validation-valid" data-valmsg-for="Unit" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="StorageLocation" class="form-label">库存位置</label>
+                                    <input type="text" class="form-control" id="StorageLocation" name="StorageLocation"
+                                           value="@Model.Input?.StorageLocation" maxlength="100"
+                                           placeholder="请输入库存位置">
+                                </div>
+                            </div>
+
+                            <!-- 价格和供应商信息 -->
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="PurchasePrice" class="form-label required">采购单价</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">￥</span>
+                                                <input type="number" class="form-control" id="PurchasePrice" name="PurchasePrice"
+                                                       value="@(Model.Input?.PurchasePrice.ToString() ?? "0")" step="0.01" min="0" required
+                                                       placeholder="0.00">
+                                            </div>
+                                            <span class="text-danger field-validation-valid" data-valmsg-for="PurchasePrice" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="SalePrice" class="form-label">销售单价</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">￥</span>
+                                                <input type="number" class="form-control" id="SalePrice" name="SalePrice"
+                                                       value="@Model.Input?.SalePrice?.ToString()" step="0.01" min="0"
+                                                       placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="SupplierName" class="form-label">供应商名称</label>
+                                    <input type="text" class="form-control" id="SupplierName" name="SupplierName"
+                                           value="@Model.Input?.SupplierName" maxlength="200"
+                                           placeholder="请输入供应商名称">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="ProductionDate" class="form-label">生产日期</label>
+                                            <input type="date" class="form-control" id="ProductionDate" name="ProductionDate"
+                                                   value="@Model.Input?.ProductionDate?.ToString("yyyy-MM-dd")">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="ExpiryDate" class="form-label">有效期至</label>
+                                            <input type="date" class="form-control" id="ExpiryDate" name="ExpiryDate"
+                                                   value="@Model.Input?.ExpiryDate?.ToString("yyyy-MM-dd")">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="QualityStatus" class="form-label required">质量状态</label>
+                                    <select class="form-select" id="QualityStatus" name="QualityStatus" required>
+                                        <option value="Pending" selected="@(Model.Input?.QualityStatus == "Pending")">待检验</option>
+                                        <option value="Qualified" selected="@(Model.Input?.QualityStatus == "Qualified")">合格</option>
+                                        <option value="Unqualified" selected="@(Model.Input?.QualityStatus == "Unqualified")">不合格</option>
+                                    </select>
+                                    <span class="text-danger field-validation-valid" data-valmsg-for="QualityStatus" data-valmsg-replace="true"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 备注 -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="Remark" class="form-label">备注</label>
+                                    <textarea class="form-control" id="Remark" name="Remark" rows="3"
+                                              maxlength="500" placeholder="请输入备注信息">@Model.Input?.Remark</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 隐藏字段 -->
+                        <input type="hidden" id="TenantId" name="TenantId" value="@Model.TenantId">
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="/Inventory" class="btn btn-secondary">取消</a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> 保存
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 表单验证
+            $('#createForm').validate({
+                rules: {
+                    BatchNumber: {
+                        required: true,
+                        maxlength: 100
+                    },
+                    HerbId: {
+                        required: true
+                    },
+                    CurrentQuantity: {
+                        required: true,
+                        min: 0
+                    },
+                    PurchasePrice: {
+                        required: true,
+                        min: 0
+                    },
+                    QualityStatus: {
+                        required: true
+                    }
+                },
+                messages: {
+                    BatchNumber: {
+                        required: "请输入批次号",
+                        maxlength: "批次号长度不能超过100个字符"
+                    },
+                    HerbId: {
+                        required: "请选择药材"
+                    },
+                    CurrentQuantity: {
+                        required: "请输入库存数量",
+                        min: "库存数量不能为负数"
+                    },
+                    PurchasePrice: {
+                        required: "请输入采购单价",
+                        min: "采购单价不能为负数"
+                    },
+                    QualityStatus: {
+                        required: "请选择质量状态"
+                    }
+                },
+                errorElement: 'span',
+                errorClass: 'text-danger',
+                highlight: function(element) {
+                    $(element).addClass('is-invalid');
+                },
+                unhighlight: function(element) {
+                    $(element).removeClass('is-invalid');
+                },
+                errorPlacement: function(error, element) {
+                    error.addClass('invalid-feedback');
+                    element.closest('.mb-3').append(error);
+                }
+            });
+
+            // 显示操作结果消息
+            @if (TempData["SuccessMessage"] != null)
+            {
+                    <text>showAlert('success', '@TempData["SuccessMessage"]');</text>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                    <text>showAlert('error', '@TempData["ErrorMessage"]');</text>
+            }
+
+            // 有效期验证
+            $('#ProductionDate, #ExpiryDate').change(function() {
+                var productionDate = $('#ProductionDate').val();
+                var expiryDate = $('#ExpiryDate').val();
+
+                if (productionDate && expiryDate) {
+                    var production = new Date(productionDate);
+                    var expiry = new Date(expiryDate);
+
+                    if (expiry <= production) {
+                        showAlert('warning', '有效期必须晚于生产日期');
+                        $('#ExpiryDate').val('');
+                    }
+                }
+            });
+
+            // 自动计算销售单价（采购单价的1.2倍）
+            $('#PurchasePrice').change(function() {
+                var purchasePrice = parseFloat($(this).val()) || 0;
+                if (purchasePrice > 0 && !$('#SalePrice').val()) {
+                    var salePrice = purchasePrice * 1.2;
+                    $('#SalePrice').val(salePrice.toFixed(2));
+                }
+            });
+        });
+
+        function showAlert(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' :
+                              type === 'warning' ? 'alert-warning' : 'alert-danger';
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('.container-fluid').prepend(alertHtml);
+
+            setTimeout(() => {
+                $('.alert').alert('close');
+            }, 5000);
+        }
+    </script>
+}

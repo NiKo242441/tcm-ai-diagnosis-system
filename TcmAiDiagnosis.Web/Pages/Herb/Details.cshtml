@@ -1,0 +1,376 @@
+﻿@page "{id:int}"
+@model TcmAiDiagnosis.Pages.Herb.DetailsModel
+@{
+    ViewData["Title"] = Model.Herb?.HerbName ?? "药材详情";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #495057;
+            background-color: transparent;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .list-group-item {
+            border: none;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+            .list-group-item:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            .list-group-item:first-child {
+                padding-top: 0;
+            }
+
+        .badge {
+            font-size: 0.75em;
+        }
+
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+}
+
+<!-- 操作提示 -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        @if (Model.Herb != null)
+        {
+            <text>@Model.Herb.HerbName - 药材详情</text>
+        }
+        else
+        {
+            <text>药材详情</text>
+        }
+    </h2>
+    <div>
+        <a href="/Herb/Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+        @if (Model.Herb != null)
+        {
+            <a href="/Herb/Edit/@Model.Herb.HerbId" class="btn btn-warning">
+                <i class="fas fa-edit"></i> 编辑
+            </a>
+            @if (Model.Herb.IsActive)
+            {
+                <form method="post" asp-page-handler="Delete" asp-route-id="@Model.Herb.HerbId" class="d-inline">
+                    <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('确定要删除药材 @Model.Herb.HerbName 吗？')">
+                        <i class="fas fa-trash"></i> 删除
+                    </button>
+                </form>
+            }
+        }
+    </div>
+</div>
+
+@if (Model.Herb != null)
+{
+    <div class="row">
+        <!-- 基本信息 -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-leaf"></i> 基本信息
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="120">药材名称：</th>
+                                    <td>
+                                        <strong class="h5 text-primary">@Model.Herb.HerbName</strong>
+                                        @if (!Model.Herb.IsActive)
+                                        {
+                                            <span class="badge bg-secondary ms-2">已删除</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>性味：</th>
+                                    <td>@(string.IsNullOrEmpty(Model.Herb.Properties) ? "-" : Model.Herb.Properties)</td>
+                                </tr>
+                                <tr>
+                                    <th>归经：</th>
+                                    <td>@(string.IsNullOrEmpty(Model.Herb.Meridians) ? "-" : Model.Herb.Meridians)</td>
+                                </tr>
+                                <tr>
+                                    <th>分类：</th>
+                                    <td>@(string.IsNullOrEmpty(Model.Herb.Category) ? "-" : Model.Herb.Category)</td>
+                                </tr>
+                                <tr>
+                                    <th>毒性：</th>
+                                    <td>
+                                        <span class="badge @GetToxicityBadgeClass(Model.Herb.ToxicityLevel)">
+                                            @Model.Herb.ToxicityLevel
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <th width="120">用法用量：</th>
+                                    <td>@(string.IsNullOrEmpty(Model.Herb.Dosage) ? "-" : Model.Herb.Dosage)</td>
+                                </tr>
+                                <tr>
+                                    <th>炮制方法：</th>
+                                    <td>@(string.IsNullOrEmpty(Model.Herb.ProcessingMethod) ? "-" : Model.Herb.ProcessingMethod)</td>
+                                </tr>
+                                <tr>
+                                    <th>创建时间：</th>
+                                    <td>@Model.Herb.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <th>更新时间：</th>
+                                    <td>@Model.Herb.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <th>状态：</th>
+                                    <td>
+                                        @if (Model.Herb.IsActive)
+                                        {
+                                            <span class="badge bg-success">启用</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">已删除</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 功效主治 -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-stethoscope"></i> 功效主治
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Herb.Efficacy))
+                    {
+                        <p class="card-text" style="white-space: pre-line;">@Model.Herb.Efficacy</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">暂无功效描述</p>
+                    }
+                </div>
+            </div>
+
+            <!-- 使用注意事项 -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> 使用注意事项
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Herb.Precautions))
+                    {
+                        <p class="card-text" style="white-space: pre-line;">@Model.Herb.Precautions</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted">暂无注意事项</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- 侧边栏信息 -->
+        <div class="col-md-4">
+            <!-- 配伍禁忌 -->
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-ban"></i> 配伍禁忌
+                        @if (Model.HasContraindications)
+                        {
+                            <span class="badge bg-light text-danger ms-2">
+                                @(Model.ContraindicatedHerbs?.Count ?? 0) 种
+                            </span>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.HasContraindications && Model.ContraindicatedHerbs?.Any() == true)
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var herb in Model.ContraindicatedHerbs)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <a href="/Herb/Details/@herb.HerbId" class="text-decoration-none">
+                                            <strong class="text-danger">@herb.HerbName</strong>
+                                        </a>
+                                        <br>
+                                        <small class="text-muted">
+                                            @herb.Category
+                                            @if (!string.IsNullOrEmpty(herb.Properties))
+                                            {
+                                                <text> | @herb.Properties</text>
+                                            }
+                                        </small>
+                                    </div>
+                                    <span class="badge @GetToxicityBadgeClass(herb.ToxicityLevel) small ms-2">
+                                        @herb.ToxicityLevel
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">暂无配伍禁忌记录</p>
+                    }
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs"></i> 快速操作
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Herb/Edit/@Model.Herb.HerbId" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> 编辑信息
+                        </a>
+
+                        @if (Model.Herb.IsActive)
+                        {
+                            <a href="/HerbContraindication/Create?primaryHerbId=@Model.Herb.HerbId" class="btn btn-outline-danger">
+                                <i class="fas fa-plus"></i> 添加禁忌
+                            </a>
+                        }
+
+                        <a href="/Herb/Index?searchKeyword=@Uri.EscapeDataString(Model.Herb.Category ?? "")"
+                           class="btn btn-outline-info">
+                            <i class="fas fa-list"></i> 同类药材
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 基本信息卡片 -->
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> 基本信息
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>药材ID：</span>
+                            <strong>@Model.Herb.HerbId</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>配伍禁忌：</span>
+                            <span class="badge @(Model.HasContraindications ? "bg-danger" : "bg-success")">
+                                @(Model.HasContraindications ? "存在" : "无")
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>状态：</span>
+                            <span class="badge @(Model.Herb.IsActive ? "bg-success" : "bg-secondary")">
+                                @(Model.Herb.IsActive ? "启用" : "已删除")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">
+            <i class="fas fa-exclamation-triangle"></i> 未找到药材信息
+        </h4>
+        <p class="mb-0">请求的药材不存在。</p>
+    </div>
+    <div class="text-center mt-4">
+        <a href="/Herb/Index" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> 返回药材列表
+        </a>
+    </div>
+}
+
+@functions {
+    string GetToxicityBadgeClass(string toxicityLevel)
+    {
+        return toxicityLevel?.ToLower() switch
+        {
+            "无毒" => "bg-success",
+            "小毒" => "bg-warning",
+            "有毒" => "bg-danger",
+            "大毒" => "bg-dark",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+<script>
+    // 自动隐藏提示消息
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    });
+</script>

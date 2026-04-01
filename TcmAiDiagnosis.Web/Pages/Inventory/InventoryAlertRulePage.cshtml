@@ -1,0 +1,308 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.Inventory.InventoryAlertRulePageModel
+@{
+    ViewData["Title"] = "库存预警规则管理";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>库存预警规则管理</h2>
+        <a asp-page-handler="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 新增规则
+        </a>
+    </div>
+
+    <!-- 消息提示 -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @TempData["InfoMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- 搜索和筛选 -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input asp-for="SearchKeyword" class="form-control" placeholder="搜索规则名称..." />
+                    </div>
+                    <div class="col-md-3">
+                        <select asp-for="SelectedAlertType" class="form-select">
+                            <option value="all">所有预警类型</option>
+                            <option value="LowStock">低库存预警</option>
+                            <option value="Expiring">临期预警</option>
+                            <option value="Overstock">库存积压</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select asp-for="SelectedStatus" class="form-select">
+                            <option value="all">所有状态</option>
+                            <option value="enabled">已启用</option>
+                            <option value="disabled">已禁用</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-search"></i> 搜索
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="btn-group">
+        <form method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" asp-page-handler="CheckAlerts" class="btn btn-info">
+                <i class="fas fa-bell me-1"></i> 检查预警
+            </button>
+        </form>
+        <a href="/Inventory/InventoryAlertRulePage" class="btn btn-outline-primary">
+            <i class="fas fa-cog me-1"></i> 预警规则管理
+        </a>
+    </div>
+    <div class="text-muted">
+        共 @Model.Rules.Count 条规则
+    </div>
+</div>
+
+    <!-- 规则列表 -->
+    <div class="card">
+        <div class="card-body">
+            @if (Model.Rules.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>规则名称</th>
+                                <th>适用药材</th>
+                                <th>预警类型</th>
+                                <th>阈值</th>
+                                <th>比较条件</th>
+                                <th>优先级</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rule in Model.Rules)
+                            {
+                                <tr>
+                                    <td>@rule.RuleName</td>
+                                    <td>@(rule.Herb?.Name ?? "所有药材")</td>
+                                    <td>
+                                        <span class="badge @Model.GetAlertTypeBadge(rule.AlertType)">
+                                            @Model.GetAlertTypeText(rule.AlertType)
+                                        </span>
+                                    </td>
+                                    <td>@rule.Threshold</td>
+                                    <td>
+                                        @(rule.ComparisonOperator switch {
+                                            "LT" => "小于",
+                                            "LTE" => "小于等于", 
+                                            "GT" => "大于",
+                                            "GTE" => "大于等于",
+                                            "EQ" => "等于",
+                                            _ => rule.ComparisonOperator
+                                        })
+                                    </td>
+                                    <td>
+                                        <span class="badge @Model.GetPriorityBadge(rule.Priority)">
+                                            @Model.GetPriorityText(rule.Priority)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @Model.GetStatusBadge(rule.IsEnabled)">
+                                            @Model.GetStatusText(rule.IsEnabled)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-page-handler="Edit" asp-route-id="@rule.Id" class="btn btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" asp-for="ToggleId" value="@rule.Id" />
+                                                <input type="hidden" asp-for="ToggleIsEnabled" value="@(!rule.IsEnabled)" />
+                                                <button type="submit" asp-page-handler="Toggle" class="btn btn-outline-warning"
+                                                        onclick="return confirm('确定要@(rule.IsEnabled ? "禁用" : "启用")这条规则吗？')">
+                                                    <i class="fas @(rule.IsEnabled ? "fa-pause" : "fa-play")"></i>
+                                                </button>
+                                            </form>
+                                            <form method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@rule.Id" />
+                                                <button type="submit" asp-page-handler="Delete" 
+                                                        class="btn btn-outline-danger"
+                                                        onclick="return confirm('确定要删除这条规则吗？')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">暂无预警规则</p>
+                    <a asp-page-handler="Create" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 创建第一条规则
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- 创建/编辑模态框 -->
+@if (Model.ShowModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Model.ModalTitle</h5>
+                    <a asp-page-handler="CloseModal" class="btn-close"></a>
+                </div>
+                <form method="post" asp-page-handler="Save">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-body">
+                        <input type="hidden" asp-for="EditingRule.Id" />
+                        <input type="hidden" asp-for="EditingRule.TenantId" />
+                        <input type="hidden" asp-for="EditingRule.CreatedBy" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">规则名称 *</label>
+                                    <input asp-for="EditingRule.RuleName" class="form-control" />
+                                    <span asp-validation-for="EditingRule.RuleName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">适用药材</label>
+                                    <select asp-for="EditingRule.HerbId" class="form-select">
+                                        <option value="">所有药材</option>
+                                        @foreach (var herb in Model.Herbs)
+                                        {
+                                            <option value="@herb.Id">@herb.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">预警类型 *</label>
+                                    <select asp-for="EditingRule.AlertType" class="form-select">
+                                        <option value="LowStock">低库存预警</option>
+                                        <option value="Expiring">临期预警</option>
+                                        <option value="Overstock">库存积压</option>
+                                    </select>
+                                    <span asp-validation-for="EditingRule.AlertType" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">比较运算符 *</label>
+                                    <select asp-for="EditingRule.ComparisonOperator" class="form-select">
+                                        <option value="LT">小于</option>
+                                        <option value="LTE">小于等于</option>
+                                        <option value="GT">大于</option>
+                                        <option value="GTE">大于等于</option>
+                                    </select>
+                                    <span asp-validation-for="EditingRule.ComparisonOperator" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">阈值 *</label>
+                                    <input asp-for="EditingRule.Threshold" type="number" class="form-control" step="0.01" min="0.01" />
+                                    <span asp-validation-for="EditingRule.Threshold" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">优先级</label>
+                                    <select asp-for="EditingRule.Priority" class="form-select">
+                                        <option value="1">低</option>
+                                        <option value="2">中</option>
+                                        <option value="3">高</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="EditingRule.IsEnabled" class="form-check-input" />
+                                <label class="form-check-label">启用规则</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">通知人员ID</label>
+                            <input asp-for="EditingRule.NotifyUserIds" class="form-control"
+                                   placeholder="多个用户ID用逗号分隔，如：1,2,3" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">备注</label>
+                            <textarea asp-for="EditingRule.Remark" class="form-control" rows="3" placeholder="请输入规则说明..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a asp-page-handler="CloseModal" class="btn btn-secondary">取消</a>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // 自动隐藏提示消息
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 5000);
+    </script>
+}

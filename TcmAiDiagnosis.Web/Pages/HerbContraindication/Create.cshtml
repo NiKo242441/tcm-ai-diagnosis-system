@@ -1,0 +1,92 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.HerbContraindication.CreateModel
+@{
+    ViewData["Title"] = "新增配伍禁忌";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label">主药材</label>
+        <select asp-for="NewContraindication.PrimaryHerbId" class="form-select" required>
+            <option value="">请选择主药材</option>
+            @foreach (var herb in Model.Herbs)
+            {
+                <option value="@herb.HerbId">@herb.HerbName</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">冲突药材</label>
+        <select asp-for="NewContraindication.ConflictHerbId" class="form-select" required>
+            <option value="">请选择冲突药材</option>
+            @foreach (var herb in Model.Herbs)
+            {
+                <option value="@herb.HerbId">@herb.HerbName</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">禁忌类型</label>
+        <input asp-for="NewContraindication.ContraindicationType" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">风险等级</label>
+        <select asp-for="NewContraindication.RiskLevel" class="form-select" required>
+            <option value="1">低风险</option>
+            <option value="2">中风险</option>
+            <option value="3">高风险</option>
+            <option value="4">严重风险</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">绝对禁忌</label>
+        <select asp-for="NewContraindication.IsAbsoluteContraindication" class="form-select" required>
+            <option value="true">绝对</option>
+            <option value="false">相对</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">描述</label>
+        <textarea asp-for="NewContraindication.Description" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">不良反应</label>
+        <textarea asp-for="NewContraindication.AdverseReactions" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">依据/文献</label>
+        <textarea asp-for="NewContraindication.Evidence" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">特殊说明</label>
+        <textarea asp-for="NewContraindication.SpecialNotes" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">替代建议</label>
+        <textarea asp-for="NewContraindication.AlternativeSuggestions" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success">保存</button>
+    <a asp-page="Index" class="btn btn-secondary">取消</a>
+</form>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger mt-3">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+}

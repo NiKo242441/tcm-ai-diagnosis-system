@@ -1,0 +1,794 @@
+@page "/Doctor/Visits/Syndrome/{visitId:int}"
+@model TcmAiDiagnosis.Web.Areas.Doctor.Pages.Visits.SyndromeModel
+@{
+    ViewData["Title"] = "AI诊断结果";
+}
+
+<div class="container-fluid">
+    <!-- 页面标题和导航 -->
+    @* <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="page-title">AI诊断结果</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Doctor">首页</a></li>
+                    <li class="breadcrumb-item"><a href="/Doctor/Visits">问诊管理</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">AI诊断结果</li>
+                </ol>
+            </nav>
+        </div>
+    </div> *@
+    <div class="title-wrapper pt-30">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="title">
+                    <h2>AI诊断结果</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/">首页</a></li>
+                            <li class="breadcrumb-item"><a href="/Doctor/Visits">问诊管理</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">AI诊断结果</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 错误提示 -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- 证候概览部分 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">证候概览</h5>
+                    <div id="loading-overview" class="d-none">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <span class="ms-2">AI诊断中...</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="syndrome-overview-container">
+                        @if (Model.Syndromes.Any())
+                        {
+                            <div class="syndrome-list-container d-flex" style="overflow-x: auto; padding-bottom: 10px;padding-top:10px;" id="syndrome-cards">
+                                @foreach (var syndrome in Model.Syndromes)
+                                {
+                                    <div class="card syndrome-card p-3 me-3 mb-2 @(syndrome.IsConfirmed ? "border-success" : "")"
+                                         data-syndrome-id="@syndrome.SyndromeId"
+                                         style="cursor: pointer; min-width: 300px; flex-shrink: 0;">
+                                        <h5 class="card-title text-primary mb-2">@syndrome.SyndromeName</h5>
+                                        @if (syndrome.IsConfirmed)
+                                        {
+                                            <span class="badge bg-success mb-2">已确证</span>
+                                        }
+                                        <div class="mb-2">
+                                            <small class="text-muted">置信度:</small>
+                                            @{
+                                                // 处理置信度值：如果是0-1之间的小数，转换为百分比
+                                                var confidencePercent = syndrome.Confidence > 1 ? syndrome.Confidence : syndrome.Confidence * 100;
+                                            }
+                                            <div class="progress" style="height: 20px; position: relative;">
+                                                <div class="progress-bar @(confidencePercent >= 80 ? "bg-success" : confidencePercent >= 60 ? "bg-warning" : "bg-danger")"
+                                                     role="progressbar"
+                                                     style="width: @(confidencePercent)%"
+                                                     aria-valuenow="@confidencePercent"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100"></div>
+                                                <span class="progress-bar-text" style="position: absolute; width: 100%; text-align: center; line-height: 20px;">
+                                                    @((int)Math.Round(confidencePercent))%
+                                                </span>
+                                            </div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(syndrome.MainSymptoms))
+                                        {
+                                            var symptoms = System.Text.Json.JsonSerializer.Deserialize<List<string>>(syndrome.MainSymptoms);
+                                            if (symptoms != null)
+                                            {
+                                                <p class="card-text mb-1">
+                                                    <small>
+                                                        <strong>主要症状:</strong>
+                                                        @foreach (var symptom in symptoms.Take(7))
+                                                        {
+                                                            <span class="badge bg-secondary me-1 mb-1">@symptom</span>
+                                                        }
+                                                        @if (symptoms.Count > 7)
+                                                        {
+                                                            <span class="badge bg-secondary">+@(symptoms.Count - 7)</span>
+                                                        }
+                                                    </small>
+                                                </p>
+                                            }
+                                        }
+                                        @if (!string.IsNullOrEmpty(syndrome.CommonDiseases))
+                                        {
+                                            var diseases = System.Text.Json.JsonSerializer.Deserialize<List<string>>(syndrome.CommonDiseases);
+                                            if (diseases != null)
+                                            {
+                                                <p class="card-text mb-0">
+                                                    <small>
+                                                        <strong>常见疾病:</strong>
+                                                        @foreach (var disease in diseases.Take(4))
+                                                        {
+                                                            <span class="badge bg-secondary me-1 mb-1">@disease</span>
+                                                        }
+                                                        @if (diseases.Count > 4)
+                                                        {
+                                                            <span class="badge bg-secondary">+@(diseases.Count - 4)</span>
+                                                        }
+                                                    </small>
+                                                </p>
+                                            }
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <p class="mt-2 text-muted">正在进行AI诊断，请稍候...</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 证候详情部分 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">证候详情</h5>
+                </div>
+                <div class="card-body">
+                    <div id="syndrome-detail-container">
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-hand-pointer fa-2x mb-3"></i>
+                            <p>请点击上方证候卡片查看详细信息</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认证候模态框 -->
+<div class="modal fade" id="confirmSyndromeModal" tabindex="-1" aria-labelledby="confirmSyndromeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmSyndromeModalLabel">确认证候</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您确定要选择 <strong id="selected-syndrome-name"></strong> 作为确证证候吗？</p>
+                <p class="text-muted small">选择后将进入AI治疗方案页面，同一问诊下只能有一个确证证候。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form id="confirm-syndrome-form" method="post" style="display: inline;">
+                    <input type="hidden" name="syndromeId" id="confirm-syndrome-id" />
+                    <button type="submit" class="btn btn-primary">确认并进入治疗方案</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let selectedSyndromeId = null;
+            let detailRefreshInterval = null;
+            let overviewRefreshInterval = null;
+
+            // 初始化页面
+            initializePage();
+
+            // 初始化页面函数
+            function initializePage() {
+                // 如果没有证候数据，开始轮询获取
+                const syndromeCards = document.getElementById('syndrome-cards');
+                if (!syndromeCards || syndromeCards.children.length === 0) {
+                    startOverviewPolling();
+                } else {
+                    // 绑定证候卡片点击事件
+                    bindSyndromeCardEvents();
+                }
+            }
+
+            // 开始轮询获取证候概览
+            function startOverviewPolling() {
+                const loadingContainer = document.getElementById('syndrome-overview-container');
+                if (loadingContainer) {
+                    loadingContainer.innerHTML = `
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">加载中...</span>
+                            </div>
+                            <p class="mt-2 text-muted">正在进行AI诊断，请稍候...</p>
+                        </div>
+                    `;
+                }
+
+                // 设置轮询获取证候概览
+                overviewRefreshInterval = setInterval(() => {
+                    loadSyndromeOverview();
+                }, 3000); // 每3秒检查一次
+
+                // 立即执行一次
+                loadSyndromeOverview();
+            }
+
+            // 加载证候概览
+            function loadSyndromeOverview() {
+                fetch(`/Doctor/Visits/Syndrome/@Model.VisitId?handler=SyndromeList&visitId=@Model.VisitId`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            // 停止轮询
+                            if (overviewRefreshInterval) {
+                                clearInterval(overviewRefreshInterval);
+                                overviewRefreshInterval = null;
+                            }
+                            // 渲染证候概览
+                            renderSyndromeOverview(data);
+                            // 绑定事件
+                            bindSyndromeCardEvents();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading syndrome overview:', error);
+                    });
+            }
+
+            // 渲染证候概览
+            function renderSyndromeOverview(syndromes) {
+                const container = document.getElementById('syndrome-overview-container');
+                if (!container) return;
+
+                let html = '<div class="syndrome-list-container d-flex" style="overflow-x: auto; padding-bottom: 10px;">';
+
+                syndromes.forEach(syndrome => {
+                    html += `
+                        <div class="card syndrome-card p-3 me-3 mb-2 ${syndrome.isConfirmed ? 'border-success' : ''}"
+                             data-syndrome-id="${syndrome.syndromeId}"
+                             style="cursor: pointer; min-width: 280px; flex-shrink: 0;">
+                            <h5 class="card-title text-primary mb-2">${syndrome.syndromeName}</h5>
+                            ${syndrome.isConfirmed ? '<span class="badge bg-success mb-2">已确证</span>' : ''}
+                            <div class="mb-2">
+                            <small class="text-muted">置信度:</small>
+                            <div class="progress" style="height: 20px; position: relative;">
+                                <div class="progress-bar ${(syndrome.confidence > 1 ? syndrome.confidence : syndrome.confidence * 100) >= 80 ? 'bg-success' : (syndrome.confidence > 1 ? syndrome.confidence : syndrome.confidence * 100) >= 60 ? 'bg-warning' : 'bg-danger'}"
+                                     role="progressbar"
+                                     style="width: ${syndrome.confidence > 1 ? syndrome.confidence : syndrome.confidence * 100}%"
+                                     aria-valuenow="${syndrome.confidence > 1 ? syndrome.confidence : syndrome.confidence * 100}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"></div>
+                                <span class="progress-bar-text" style="position: absolute; width: 100%; text-align: center; line-height: 20px;">
+                                    ${Math.round(syndrome.confidence > 1 ? syndrome.confidence : syndrome.confidence * 100)}%
+                                </span>
+                            </div>
+                        </div>`;
+
+                    if (syndrome.mainSymptoms && syndrome.mainSymptoms.length > 0) {
+                        html += `
+                            <p class="card-text mb-1">
+                                <small>
+                                    <strong>主要症状:</strong> `;
+                        syndrome.mainSymptoms.slice(0, 7).forEach(symptom => {
+                            html += `<span class="badge bg-secondary me-1 mb-1">${symptom}</span>`;
+                        });
+                        if (syndrome.mainSymptoms.length > 7) {
+                            html += `<span class="badge bg-secondary">+${syndrome.mainSymptoms.length - 7}</span>`;
+                        }
+                        html += `
+                                </small>
+                            </p>`;
+                    }
+
+                    if (syndrome.commonDiseases && syndrome.commonDiseases.length > 0) {
+                        html += `
+                            <p class="card-text mb-0">
+                                <small>
+                                    <strong>常见疾病:</strong> `;
+                        syndrome.commonDiseases.slice(0, 4).forEach(disease => {
+                            html += `<span class="badge bg-secondary me-1 mb-1">${disease}</span>`;
+                        });
+                        if (syndrome.commonDiseases.length > 4) {
+                            html += `<span class="badge bg-secondary">+${syndrome.commonDiseases.length - 4}</span>`;
+                        }
+                        html += `
+                                </small>
+                            </p>`;
+                    }
+
+                    html += `</div>`;
+                });
+
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            // 绑定证候卡片点击事件
+            function bindSyndromeCardEvents() {
+                const syndromeCards = document.querySelectorAll('.syndrome-card');
+                syndromeCards.forEach(card => {
+                    card.addEventListener('click', function() {
+                        const syndromeId = this.getAttribute('data-syndrome-id');
+
+                        // 移除其他卡片的选中状态
+                        syndromeCards.forEach(c => {
+                            c.classList.remove('border-primary');
+                        });
+                        // 添加当前卡片的选中状态
+                        this.classList.add('border-primary');
+
+                        selectedSyndromeId = syndromeId;
+                        loadSyndromeDetail(syndromeId);
+                    });
+                });
+            }
+
+            // 加载证候详情
+            function loadSyndromeDetail(syndromeId) {
+                const container = document.getElementById('syndrome-detail-container');
+                if (!container) return;
+
+                // 显示加载状态
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-2 text-muted">正在加载证候详情...</p>
+                    </div>
+                `;
+
+                // 发送AJAX请求获取详情
+                fetch(`/Doctor/Visits/Syndrome/@Model.VisitId?handler=SyndromeDetail&syndromeId=${syndromeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.data) {
+                            // 成功获取到详情数据
+                            renderSyndromeDetail(data.data);
+                        } else if (data.status === 'loading' || data.status === 'pending') {
+                            // 正在加载或等待中
+                            showLoadingDetail(data.message || '正在获取详情...');
+                            // 设置定时刷新
+                            if (detailRefreshInterval) {
+                                clearInterval(detailRefreshInterval);
+                            }
+                            detailRefreshInterval = setInterval(() => {
+                                loadSyndromeDetail(syndromeId);
+                            }, 3000); // 每3秒刷新一次
+                        } else {
+                            // 错误状态
+                            showErrorDetail(data.message || '加载失败，请稍后重试');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showErrorDetail('加载失败，请稍后重试');
+                    });
+            }
+
+            // 渲染证候详情
+            function renderSyndromeDetail(data) {
+                // 清除定时刷新
+                if (detailRefreshInterval) {
+                    clearInterval(detailRefreshInterval);
+                    detailRefreshInterval = null;
+                }
+
+                const container = document.getElementById('syndrome-detail-container');
+                let html = `
+                    <div class="card detail-card p-4">
+                        <!-- 证候详情标题和按钮 -->
+                        <h4 class="mb-3 text-primary d-flex justify-content-between align-items-center">
+                            ${data.syndromeName}
+                            <button type="button" class="btn btn-success" onclick="confirmSyndrome('${data.syndromeName}', ${selectedSyndromeId})">
+                                AI治疗方案
+                            </button>
+                        </h4>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- 左侧列：描述性内容 -->
+                                <p><strong>置信度:</strong></p>
+                                <div class="progress" style="height: 25px; position: relative;">
+                                    <div class="progress-bar ${(data.confidence > 1 ? data.confidence : data.confidence * 100) >= 80 ? 'bg-success' : (data.confidence > 1 ? data.confidence : data.confidence * 100) >= 60 ? 'bg-warning' : 'bg-danger'}" role="progressbar" style="width: ${data.confidence > 1 ? data.confidence : data.confidence * 100}%;"
+                                         aria-valuenow="${data.confidence > 1 ? data.confidence : data.confidence * 100}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <span class="progress-bar-text" style="position: absolute; width: 100%; text-align: center; line-height: 25px;">
+                                        ${Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%
+                                    </span>
+                                </div>
+                                <p></p>
+                                <p><strong>病机概要:</strong> ${data.pathogenesisAnalysis || '暂无数据'}</p>
+                                <p><strong>临床关联:</strong> ${data.description || '暂无数据'}</p>
+                                <p><strong>治疗原则:</strong> ${data.treatmentPrinciple || '暂无数据'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- 右侧列：标签形式内容 -->
+                                <p><strong>主要症状:</strong> `;
+
+                if (data.mainSymptoms && data.mainSymptoms.length > 0) {
+                    data.mainSymptoms.forEach(symptom => {
+                        html += `<span class="badge bg-primary me-1 mb-1">${symptom}</span>`;
+                    });
+                } else {
+                    html += '<span class="text-muted">暂无数据</span>';
+                }
+
+                html += `</p>
+                                <p><strong>证候分类:</strong> `;
+
+                if (data.syndromeCategories && data.syndromeCategories.length > 0) {
+                    data.syndromeCategories.forEach(category => {
+                        html += `<span class="badge bg-success me-1 mb-1">${category}</span>`;
+                    });
+                } else {
+                    html += '<span class="text-muted">暂无数据</span>';
+                }
+
+                html += `</p>
+                                <p><strong>归属脏腑:</strong> `;
+
+                if (data.relatedOrgans && data.relatedOrgans.length > 0) {
+                    data.relatedOrgans.forEach(organ => {
+                        html += `<span class="badge bg-warning text-dark me-1 mb-1">${organ}</span>`;
+                    });
+                } else {
+                    html += '<span class="text-muted">暂无数据</span>';
+                }
+
+                html += `</p>
+                                <p><strong>常见疾病:</strong> `;
+
+                if (data.commonDiseases && data.commonDiseases.length > 0) {
+                    data.commonDiseases.forEach(disease => {
+                        html += `<span class="badge bg-danger me-1 mb-1">${disease}</span>`;
+                    });
+                } else {
+                    html += '<span class="text-muted">暂无数据</span>';
+                }
+
+                html += `</p>
+                                <p><strong>推荐方剂:</strong> `;
+
+                if (data.recommendedFormulas && data.recommendedFormulas.length > 0) {
+                    data.recommendedFormulas.forEach(formula => {
+                        html += `<span class="badge bg-info text-dark me-1 mb-1">${formula}</span>`;
+                    });
+                } else {
+                    html += '<span class="text-muted">暂无数据</span>';
+                }
+
+                html += `</p>
+                            </div>
+                        </div>
+
+                        <!-- 诊断信息部分 -->
+                        <h5 class="section-title mt-4 mb-3">诊断信息</h5>
+                        <div class="row section-row">
+                            <div class="col-md-6">
+                                <h5 class="mb-2 text-info">诊断结论</h5>`;
+
+                if (data.diagnosisInfo && data.diagnosisInfo.conclusion) {
+                    const conclusion = data.diagnosisInfo.conclusion;
+                    html += `
+                                <p><strong>主要证候:</strong> <span class="badge bg-primary">${conclusion.primarySyndrome || '暂无数据'}</span></p>
+                                <p><strong>伴随证候:</strong> `;
+
+                    if (conclusion.accompanyingSyndromes && conclusion.accompanyingSyndromes.length > 0) {
+                        conclusion.accompanyingSyndromes.forEach(syndrome => {
+                            html += `<span class="badge bg-secondary me-1 mb-1">${syndrome}</span>`;
+                        });
+                    } else {
+                        html += '<span class="text-muted">暂无数据</span>';
+                    }
+
+                    html += `</p>
+                                <p><strong>体质辨识:</strong> <span class="badge bg-secondary">${conclusion.constitutionType || '暂无数据'}</span></p>`;
+                } else {
+                    html += '<p class="text-muted">暂无诊断结论数据</p>';
+                }
+
+                html += `
+                                <h5 class="mt-4 mb-2 text-info">诊断分析</h5>`;
+
+                if (data.diagnosisInfo && data.diagnosisInfo.analysis) {
+                    const analysis = data.diagnosisInfo.analysis;
+                    html += `
+                                <p><strong>主要依据:</strong> ${analysis.primaryBasis || '暂无数据'}</p>
+                                <p><strong>伴随依据:</strong> ${analysis.accompanyingBasis || '暂无数据'}</p>
+                                <p><strong>体质影响:</strong> ${analysis.constitutionInfluence || '暂无数据'}</p>`;
+                } else {
+                    html += '<p class="text-muted">暂无诊断分析数据</p>';
+                }
+
+                html += `
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-2 text-info">鉴别诊断</h5>`;
+
+                if (data.diagnosisInfo && data.diagnosisInfo.differentialDiagnoses && data.diagnosisInfo.differentialDiagnoses.length > 0) {
+                    data.diagnosisInfo.differentialDiagnoses.forEach(diff => {
+                        html += `
+                                <!-- 鉴别诊断项 -->
+                                <div class="differential-item mb-3 p-3 rounded">
+                                    <p class="mb-1">
+                                        <strong>相似证候:</strong> <span class="badge bg-secondary">${diff.similarSyndrome}</span><br>
+                                        <strong>关键区别:</strong> ${diff.keyDifference}
+                                    </p>
+                                </div>`;
+                    });
+                } else {
+                    html += '<p class="text-muted">暂无鉴别诊断数据</p>';
+                }
+
+                html += `
+                            </div>
+                        </div>
+
+                        <!-- 治疗与护理部分 -->
+                        <h5 class="section-title mt-4 mb-3">治疗与护理</h5>
+                        <div class="row section-row">
+                            <div class="col-md-6">
+                                <h5 class="mb-2 text-info">治疗建议</h5>`;
+
+                if (data.treatmentCareInfo && data.treatmentCareInfo.treatmentRecommendation) {
+                    const treatment = data.treatmentCareInfo.treatmentRecommendation;
+                    html += `
+                                <p><strong>治疗原则:</strong> ${treatment.treatmentPrinciple || '暂无数据'}</p>
+                                <p><strong>方药:</strong> ${treatment.formulaRecommendation || '暂无数据'}</p>
+                                <p><strong>饮食建议:</strong> ${treatment.dietaryAdvice || '暂无数据'}</p>
+                                <p><strong>生活方式建议:</strong> ${treatment.lifestyleAdvice || '暂无数据'}</p>`;
+                } else {
+                    html += '<p class="text-muted">暂无治疗建议数据</p>';
+                }
+
+                html += `
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="mb-2 text-info">注意事项</h5>`;
+
+                if (data.treatmentCareInfo && data.treatmentCareInfo.precautions) {
+                    const precautions = data.treatmentCareInfo.precautions;
+                    html += `
+                                <p><strong>用药警示:</strong> ${precautions.medicationWarning || '暂无数据'}</p>
+                                <p><strong>复诊建议:</strong> ${precautions.followUpAdvice || '暂无数据'}</p>`;
+                } else {
+                    html += '<p class="text-muted">暂无注意事项数据</p>';
+                }
+
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                container.innerHTML = html;
+            }
+
+            // 显示加载中的详情
+            function showLoadingDetail(message) {
+                const container = document.getElementById('syndrome-detail-container');
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-2 text-muted">${message}</p>
+                        <small class="text-muted">页面将自动刷新...</small>
+                    </div>
+                `;
+            }
+
+            // 显示错误详情
+            function showErrorDetail(message) {
+                const container = document.getElementById('syndrome-detail-container');
+                if (!container) return;
+
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-3"></i>
+                        <p class="text-muted">${message}</p>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="retryLoadDetail()">
+                            <i class="fas fa-redo me-1"></i>重试
+                        </button>
+                    </div>
+                `;
+            }
+
+            // 重试加载详情
+            window.retryLoadDetail = function() {
+                if (selectedSyndromeId) {
+                    loadSyndromeDetail(selectedSyndromeId);
+                }
+            };
+
+            // 确认证候函数
+            window.confirmSyndrome = function(syndromeName, syndromeId) {
+                const selectedNameElement = document.getElementById('selected-syndrome-name');
+                const confirmIdElement = document.getElementById('confirm-syndrome-id');
+                const confirmFormElement = document.getElementById('confirm-syndrome-form');
+
+                if (selectedNameElement) selectedNameElement.textContent = syndromeName;
+                if (confirmIdElement) confirmIdElement.value = syndromeId;
+                if (confirmFormElement) {
+                    confirmFormElement.setAttribute('action', `/Doctor/Visits/Syndrome/@Model.VisitId?handler=ConfirmSyndrome`);
+                }
+
+                // 使用 Bootstrap 5 的方式显示模态框
+                const modalElement = document.getElementById('confirmSyndromeModal');
+                if (modalElement && typeof bootstrap !== 'undefined') {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                }
+            };
+
+            // 页面卸载时清理定时器
+            window.addEventListener('beforeunload', function() {
+                if (detailRefreshInterval) {
+                    clearInterval(detailRefreshInterval);
+                }
+                if (overviewRefreshInterval) {
+                    clearInterval(overviewRefreshInterval);
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .syndrome-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+            .syndrome-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            }
+
+            .syndrome-card.border-primary {
+                border-color: #0d6efd !important;
+                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            }
+
+        .confidence-bar .progress {
+            background-color: #e9ecef;
+        }
+
+        .detail-section {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            height: 100%;
+        }
+
+        .section-title {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 0.5rem;
+        }
+
+        .detail-content {
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        .symptoms-list .badge,
+        .diseases-list .badge,
+        .formulas-list .badge {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .breadcrumb {
+            background: none;
+            padding: 0;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6c757d;
+        }
+
+        /* 原型设计样式 */
+        .detail-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+            .detail-card h4 {
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+
+            .detail-card h5 {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #17a2b8;
+            }
+
+            .detail-card p {
+                margin-bottom: 0.8rem;
+                line-height: 1.6;
+            }
+
+            .detail-card strong {
+                color: #495057;
+                font-weight: 600;
+            }
+
+        .section-row {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .differential-item {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .progress-bar-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 25px;
+            color: #efefef;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .badge {
+            font-size: 0.85em;
+            padding: 0.5em 0.75em;
+            margin: 2px;
+        }
+
+        .progress {
+            background-color: #e9ecef;
+            border-radius: 0.375rem;
+        }
+
+        @* .progress-bar {
+            background: linear-gradient(90deg, #28a745 0%, #ffc107 70%, #dc3545 100%);
+        } *@
+    </style>
+}

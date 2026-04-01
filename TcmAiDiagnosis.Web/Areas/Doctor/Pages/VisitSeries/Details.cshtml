@@ -1,0 +1,980 @@
+@page "/Doctor/VisitSeries/Details/{id:int}"
+@model TcmAiDiagnosis.Web.Areas.Doctor.Pages.VisitSeries.DetailsModel
+@{
+    ViewData["Title"] = "就诊系列详情";
+}
+
+<!-- 引入FontAwesome图标库 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- 时间轴自定义样式 -->
+<style>
+/* 医疗系统设计规范 - CSS变量定义 */
+:root {
+    --medical-primary: #4F6FBF;
+    --medical-secondary: #6B85D1;
+    --medical-accent: #3A5299;
+    --medical-highlight: #365CF5;
+    --medical-light: #F8FAFC;
+    --medical-card-bg: #FFFFFF;
+    --medical-border: #E2E8F0;
+    --medical-text: #475569;
+    --medical-text-secondary: #64748B;
+    --medical-success: #059669;
+    --medical-warning: #D97706;
+    --medical-danger: #DC2626;
+    --medical-info: #0284C7;
+    --medical-shadow: 0px 12px 24px -4px rgba(145, 158, 171, 0.12), 0px 0px 2px 0px rgba(145, 158, 171, 0.20);
+}
+.medical-timeline {
+    position: relative;
+    padding-left: 0;
+}
+
+.medical-timeline-item {
+    position: relative;
+    padding-left: 60px;
+    margin-bottom: 30px;
+}
+
+.medical-timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 50px;
+    bottom: -30px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--medical-primary, #4F6FBF) 0%, var(--medical-border, #E2E8F0) 100%);
+}
+
+.medical-timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 2;
+}
+
+.medical-timeline-content {
+    position: relative;
+    background: var(--medical-card-bg, #FFFFFF);
+    border-radius: 7px;
+    box-shadow: var(--medical-shadow, 0px 12px 24px -4px rgba(145, 158, 171, 0.12));
+    border: 1px solid var(--medical-border, #E2E8F0);
+}
+
+.medical-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    border: 1px solid transparent;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.medical-status-info {
+    background-color: rgba(79, 111, 191, 0.1);
+    color: var(--medical-primary, #4F6FBF);
+    border-color: rgba(79, 111, 191, 0.2);
+}
+
+.medical-status-success {
+    background-color: rgba(5, 150, 105, 0.1);
+    color: var(--medical-success, #059669);
+    border-color: rgba(5, 150, 105, 0.2);
+}
+
+.medical-status-warning {
+    background-color: rgba(217, 119, 6, 0.1);
+    color: var(--medical-warning, #D97706);
+    border-color: rgba(217, 119, 6, 0.2);
+}
+
+.medical-status-primary {
+    background-color: rgba(79, 111, 191, 0.1);
+    color: var(--medical-primary, #4F6FBF);
+    border-color: rgba(79, 111, 191, 0.2);
+}
+
+.medical-status-secondary {
+    background-color: rgba(100, 116, 139, 0.1);
+    color: var(--medical-text-secondary, #64748B);
+    border-color: rgba(100, 116, 139, 0.2);
+}
+
+/* 优化的信息展示样式 - 基于医疗系统设计规范 */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: var(--medical-card-bg, #FFFFFF);
+    border-radius: 7px;
+    border-left: 4px solid var(--medical-primary, #4F6FBF);
+    box-shadow: 0 2px 8px rgba(145, 158, 171, 0.08);
+    border: 1px solid var(--medical-border, #E2E8F0);
+    border-left: 4px solid var(--medical-primary, #4F6FBF);
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    box-shadow: 0 4px 12px rgba(79, 111, 191, 0.15);
+    transform: translateY(-1px);
+}
+
+.info-item .icon {
+    color: var(--medical-primary, #4F6FBF);
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+    width: 24px;
+    text-align: center;
+}
+
+.info-item .content {
+    flex: 1;
+}
+
+.info-item .label {
+    font-size: 0.8rem;
+    color: var(--medical-text-secondary, #64748B);
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.info-item .value {
+    font-size: 0.95rem;
+    color: var(--medical-text, #475569);
+    font-weight: 600;
+    margin: 0;
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.compact-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.compact-actions .medical-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* 概览卡片样式 - 基于医疗系统设计规范 */
+.overview-header {
+    background: var(--medical-primary, #4F6FBF);
+    padding: 1.5rem 2rem;
+    border-radius: 7px 7px 0 0;
+    color: white;
+    box-shadow: var(--medical-shadow, 0px 12px 24px -4px rgba(145, 158, 171, 0.12));
+}
+
+.patient-avatar {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.patient-name {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.series-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.series-id {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.status-active {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--medical-success, #059669);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.status-completed {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--medical-text-secondary, #64748B);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.action-buttons .btn {
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.overview-content {
+    background: var(--medical-card-bg, #FFFFFF);
+    padding: 0;
+    border-radius: 0 0 7px 7px;
+    border: 1px solid var(--medical-border, #E2E8F0);
+    border-top: none;
+}
+
+.info-card {
+    padding: 1.5rem 1rem;
+    text-align: center;
+    border-right: 1px solid var(--medical-border, #E2E8F0);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--medical-card-bg, #FFFFFF);
+}
+
+.info-card:last-child {
+    border-right: none;
+}
+
+.info-card:hover {
+    background: var(--medical-light, #F8FAFC);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(79, 111, 191, 0.1);
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--medical-primary, #4F6FBF);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    color: white;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 8px rgba(79, 111, 191, 0.3);
+}
+
+.info-content {
+    text-align: center;
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--medical-text-secondary, #64748B);
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.info-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--medical-text, #475569);
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+/* 操作按钮样式优化 */
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.action-buttons .btn {
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border-width: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 创建复诊按钮 - 主要操作 */
+.action-buttons .btn-primary {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    border-color: #059669;
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.action-buttons .btn-primary:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    border-color: #047857;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+}
+
+.action-buttons .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* 创建随访按钮 - 次要操作 */
+.action-buttons .btn-outline-primary {
+    background: white;
+    border-color: #3B82F6;
+    color: #3B82F6;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+.action-buttons .btn-outline-primary:hover {
+    background: #3B82F6;
+    border-color: #2563EB;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.action-buttons .btn-outline-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* 结束序列按钮 - 危险操作 */
+.action-buttons .btn-outline-danger {
+    background: white;
+    border-color: #EF4444;
+    color: #EF4444;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.action-buttons .btn-outline-danger:hover {
+    background: #EF4444;
+    border-color: #DC2626;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.action-buttons .btn-outline-danger:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* 按钮图标样式 */
+.action-buttons .btn i {
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+}
+
+/* 响应式设计 */
+@@media (max-width: 768px) {
+    .overview-header {
+        padding: 1rem;
+    }
+    
+    .overview-header .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .action-buttons {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 0;
+    }
+    
+    .info-card {
+        padding: 1rem 0.5rem;
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .info-card:last-child {
+        border-bottom: none;
+    }
+}
+
+.summary-card {
+    background: linear-gradient(135deg, #365CF5 0%, #4c6fff 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card .row {
+    align-items: center;
+}
+
+.summary-card .info-item {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.summary-card .info-item .icon {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.summary-card .info-item .label {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.summary-card .info-item .value {
+    color: white;
+}
+
+.medical-btn-outline-light {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.medical-btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* 页面标题和导航样式优化 */
+.medical-container {
+    background: var(--medical-light, #F8FAFC);
+    min-height: 100vh;
+    padding: 1.5rem;
+}
+
+.page-title-box h4 {
+    color: var(--medical-primary, #4F6FBF) !important;
+    font-weight: 600;
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.breadcrumb {
+    background: var(--medical-card-bg, #FFFFFF);
+    border-radius: 7px;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 2px 4px rgba(145, 158, 171, 0.08);
+    border: 1px solid var(--medical-border, #E2E8F0);
+}
+
+.breadcrumb-item a {
+    color: var(--medical-primary, #4F6FBF);
+    font-weight: 500;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--medical-accent, #3A5299);
+}
+
+.breadcrumb-item.active {
+    color: var(--medical-text-secondary, #64748B);
+    font-weight: 500;
+}
+
+/* 医疗卡片基础样式 */
+.medical-card {
+    background: var(--medical-card-bg, #FFFFFF);
+    border-radius: 7px;
+    box-shadow: var(--medical-shadow, 0px 12px 24px -4px rgba(145, 158, 171, 0.12));
+    border: 1px solid var(--medical-border, #E2E8F0);
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.medical-card-header {
+    background: var(--medical-primary, #4F6FBF);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    border-radius: 7px 7px 0 0;
+    font-weight: 600;
+    font-size: 1.1rem;
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.medical-card-body {
+    padding: 1.5rem;
+}
+</style>
+
+<div class="medical-container">
+    <!-- 页面标题 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between mb-4">
+                <h4 class="mb-sm-0 text-primary">
+                    <i class="fas fa-file-medical me-2"></i>就诊系列详情
+                </h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="/Doctor/Patient" class="text-decoration-none">患者管理</a></li>
+                        <li class="breadcrumb-item"><a href="/Doctor/Patient/Detail/@Model.Patient.Id" class="text-decoration-none">患者详情</a></li>
+                        <li class="breadcrumb-item active text-muted">就诊系列详情</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- 患者和就诊序列信息概览卡片 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="medical-card">
+                <div class="medical-card-body p-0">
+                    <!-- 顶部标题栏 -->
+                    <div class="overview-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="patient-avatar">
+                                    <i class="fas fa-user-md"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h4 class="patient-name mb-1">@Model.Patient.FullName</h4>
+                                    <div class="series-info">
+                                        <span class="series-id">就诊序列 #@Model.VisitSeries.SeriesId</span>
+                                        @if (Model.VisitSeries.Status == 1)
+                                        {
+                                            <span class="status-badge status-completed">
+                                                <i class="fas fa-check-circle me-1"></i>已完成
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-active">
+                                                <i class="fas fa-play-circle me-1"></i>进行中
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="action-buttons">
+                                @if (Model.VisitSeries.Status != 1)
+                                {
+                                    <a href="@Url.Page("/VisitSeries/Create", new { area = "Doctor", patientId = Model.Patient.Id, seriesId = Model.VisitSeries.SeriesId })" 
+                                       class="btn btn-primary btn-sm me-2">
+                                        <i class="fas fa-plus me-1"></i>创建复诊
+                                    </a>
+                                    <a href="@Url.Page("/VisitSeries/Create", new { area = "Doctor", patientId = Model.Patient.Id, seriesId = Model.VisitSeries.SeriesId, visitTypeParam = "followupcall" })" 
+                                       class="btn btn-outline-primary btn-sm me-2">
+                                        <i class="fas fa-phone me-1"></i>创建随访
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#endSeriesModal">
+                                        <i class="fas fa-stop me-1"></i>结束序列
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 信息网格 -->
+                    <div class="overview-content">
+                        <div class="row g-0">
+                            <div class="col-md-2">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="fas fa-venus-mars"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <div class="info-label">性别</div>
+                                        <div class="info-value">@Model.Patient.Gender</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="fas fa-birthday-cake"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <div class="info-label">年龄</div>
+                                        <div class="info-value">@(Model.Patient.DateOfBirth.HasValue ? DateTime.Now.Year - Model.Patient.DateOfBirth.Value.Year : "未知")岁</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <div class="info-label">手机号</div>
+                                        <div class="info-value">@Model.Patient.PhoneNumber</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="fas fa-file-medical-alt"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <div class="info-label">就诊次数</div>
+                                        <div class="info-value">@Model.Visits.Count 次</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="info-card">
+                                    <div class="info-icon">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <div class="info-label">创建时间</div>
+                                        <div class="info-value">@Model.VisitSeries.CreatedAt.ToString("MM-dd HH:mm")</div>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (Model.VisitSeries.Status == 1 && Model.VisitSeries.SeriesEndDate.HasValue)
+                            {
+                                <div class="col-md-2">
+                                    <div class="info-card">
+                                        <div class="info-icon">
+                                            <i class="fas fa-calendar-check"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <div class="info-label">结束时间</div>
+                                            <div class="info-value">@Model.VisitSeries.SeriesEndDate.Value.ToString("MM-dd HH:mm")</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 就诊记录列表 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="medical-card">
+                <div class="medical-card-header">
+                    <i class="fas fa-file-medical-alt me-2"></i>就诊记录详情
+                </div>
+                <div class="medical-card-body">
+                    @if (Model.Visits.Any())
+                    {
+                        <div class="medical-timeline">
+                            @foreach (var visit in Model.Visits)
+                            {
+                                <div class="medical-timeline-item">
+                                    <div class="medical-timeline-marker">
+                                        <div class="medical-timeline-marker-icon" style="background-color: #f8f9fa; border: 2px solid #365CF5; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-stethoscope" style="color: #365CF5; font-size: 1rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="medical-timeline-content">
+                                        <div class="medical-card border-0 shadow-sm">
+                                            <div class="medical-card-header bg-light">
+                                                <div class="d-flex justify-content-between align-items-center w-100">
+                                                    <div class="d-flex align-items-center flex-grow-0">
+                                                        @switch (visit.VisitType)
+                                                        {
+                                                            case TcmAiDiagnosis.Entities.VisitType.Initial:
+                                                                <span style="color: white; font-size: 1.1rem; font-weight: 600;">
+                                                                    <i class="fas fa-user-plus me-1"></i>初诊
+                                                                </span>
+                                                                break;
+                                                            case TcmAiDiagnosis.Entities.VisitType.FollowUp:
+                                                                <span style="color: white; font-size: 1.1rem; font-weight: 600;">
+                                                                    <i class="fas fa-redo me-1"></i>复诊
+                                                                </span>
+                                                                break;
+                                                            case TcmAiDiagnosis.Entities.VisitType.FollowUpCall:
+                                                                <span style="color: white; font-size: 1.1rem; font-weight: 600;">
+                                                                    <i class="fas fa-phone me-1"></i>随访
+                                                                </span>
+                                                                break;
+                                                        }
+                                                        <span class="ms-2" style="color: white; font-size: 0.9rem;">（第 @(visit.Sequence) 次）</span>
+                                                    </div>
+                                                    <div class="flex-grow-1"></div>
+                                                    <small class="text-end" style="color: white; flex-shrink: 0;">
+                                                        <i class="fas fa-clock me-1"></i>@visit.VisitDate.ToString("yyyy-MM-dd HH:mm")
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="medical-card-body">
+                                                <!-- 基本信息 -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-12">
+                                                        @if (!string.IsNullOrEmpty(visit.ChiefComplaint))
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">主诉：</span><span class="medical-detail-content">@visit.ChiefComplaint</span></div>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(visit.AccompanyingSymptoms))
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">伴随症状：</span><span class="medical-detail-content">@visit.AccompanyingSymptoms</span></div>
+                                                        }
+                                                        @if (visit.OnsetDays.HasValue)
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">发病天数：</span><span class="medical-detail-content">@visit.OnsetDays 天</span></div>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                <!-- 中医四诊信息 -->
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <h6 class="medical-section-title mb-2"><i class="fas fa-eye me-1"></i>望诊</h6>
+                                                        @if (!string.IsNullOrEmpty(visit.FaceColor))
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">面色：</span><span class="medical-detail-content">@visit.FaceColor</span></div>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(visit.TongueQuality))
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">舌质：</span><span class="medical-detail-content">@visit.TongueQuality</span></div>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(visit.TongueCoating))
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">舌苔：</span><span class="medical-detail-content">@visit.TongueCoating</span></div>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(visit.TongueShape))
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">舌形：</span><span class="medical-detail-content">@visit.TongueShape</span></div>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(visit.MentalState))
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">精神状态：</span><span class="medical-detail-content">@visit.MentalState</span></div>
+                                                        }
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6 class="medical-section-title mb-2"><i class="fas fa-hand-paper me-1"></i>切诊</h6>
+                                                        @if (!string.IsNullOrEmpty(visit.PulseType))
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">脉象：</span><span class="medical-detail-content">@visit.PulseType</span></div>
+                                                        }
+                                                        @if (!string.IsNullOrEmpty(visit.PulseFeatures))
+                                                        {
+                                                            <div class="medical-detail-item"><span class="medical-detail-label">脉象特征：</span><span class="medical-detail-content">@visit.PulseFeatures</span></div>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                <!-- 问诊信息 -->
+                                                @if (!string.IsNullOrEmpty(visit.Diet) || !string.IsNullOrEmpty(visit.Sleep) || 
+                                                     !string.IsNullOrEmpty(visit.Excretion) || !string.IsNullOrEmpty(visit.Sweating) ||
+                                                     !string.IsNullOrEmpty(visit.EmotionState))
+                                                {
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-12">
+                                                            <h6 class="medical-section-title mb-2"><i class="fas fa-question-circle me-1"></i>问诊</h6>
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    @if (!string.IsNullOrEmpty(visit.Diet))
+                                                                    {
+                                                                        <div class="medical-detail-item"><span class="medical-detail-label">饮食：</span><span class="medical-detail-content">@visit.Diet</span></div>
+                                                                    }
+                                                                    @if (!string.IsNullOrEmpty(visit.Sleep))
+                                                                    {
+                                                                        <div class="medical-detail-item"><span class="medical-detail-label">睡眠：</span><span class="medical-detail-content">@visit.Sleep</span></div>
+                                                                    }
+                                                                    @if (!string.IsNullOrEmpty(visit.Excretion))
+                                                                    {
+                                                                        <div class="medical-detail-item"><span class="medical-detail-label">大小便：</span><span class="medical-detail-content">@visit.Excretion</span></div>
+                                                                    }
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    @if (!string.IsNullOrEmpty(visit.Sweating))
+                                                                    {
+                                                                        <div class="medical-detail-item"><span class="medical-detail-label">汗出：</span><span class="medical-detail-content">@visit.Sweating</span></div>
+                                                                    }
+                                                                    @if (!string.IsNullOrEmpty(visit.EmotionState))
+                                                                    {
+                                                                        <div class="medical-detail-item"><span class="medical-detail-label">情绪：</span><span class="medical-detail-content">@visit.EmotionState</span></div>
+                                                                    }
+                                                                    @if (!string.IsNullOrEmpty(visit.ConstitutionAssessment))
+                                                                    {
+                                                                        <div class="medical-detail-item"><span class="medical-detail-label">体质：</span><span class="medical-detail-content">@visit.ConstitutionAssessment</span></div>
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+
+                                                <!-- 其他信息 -->
+                                                @if (!string.IsNullOrEmpty(visit.PreviousTreatmentEffect) || !string.IsNullOrEmpty(visit.AggravationTime) ||
+                                                     !string.IsNullOrEmpty(visit.ClimateRelationship) || !string.IsNullOrEmpty(visit.OtherDescription))
+                                                {
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-12">
+                                                            <h6 class="medical-section-title mb-2"><i class="fas fa-info-circle me-1"></i>其他信息</h6>
+                                                            @if (!string.IsNullOrEmpty(visit.PreviousTreatmentEffect))
+                                                            {
+                                                                <div class="medical-detail-item"><span class="medical-detail-label">既往治疗效果：</span><span class="medical-detail-content">@visit.PreviousTreatmentEffect</span></div>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(visit.AggravationTime))
+                                                            {
+                                                                <div class="medical-detail-item"><span class="medical-detail-label">加重时间：</span><span class="medical-detail-content">@visit.AggravationTime</span></div>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(visit.ClimateRelationship))
+                                                            {
+                                                                <div class="medical-detail-item"><span class="medical-detail-label">气候关系：</span><span class="medical-detail-content">@visit.ClimateRelationship</span></div>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(visit.OtherDescription))
+                                                            {
+                                                                <div class="medical-detail-item"><span class="medical-detail-label">其他描述：</span><span class="medical-detail-content">@visit.OtherDescription</span></div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }
+
+                                                <!-- 随访信息 -->
+                                                @if (visit.NextFollowUpDate.HasValue || visit.NextFollowUpVisitDate.HasValue || 
+                                                     !string.IsNullOrEmpty(visit.SymptomsToMonitor) || !string.IsNullOrEmpty(visit.MedicationReactionTracking))
+                                                {
+                                                    <div class="row mb-3">
+                                                        <div class="col-md-12">
+                                                            <h6 class="medical-section-title mb-2"><i class="fas fa-calendar-check me-1"></i>随访安排</h6>
+                                                            @if (visit.NextFollowUpDate.HasValue)
+                                                            {
+                                                                <div class="medical-detail-item"><span class="medical-detail-label">下次随访时间：</span><span class="medical-detail-content">@visit.NextFollowUpDate.Value.ToString("yyyy-MM-dd")</span></div>
+                                                            }
+                                                            @if (visit.NextFollowUpVisitDate.HasValue)
+                                                            {
+                                                                <div class="medical-detail-item"><span class="medical-detail-label">下次复诊时间：</span><span class="medical-detail-content">@visit.NextFollowUpVisitDate.Value.ToString("yyyy-MM-dd")</span></div>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(visit.SymptomsToMonitor))
+                                                            {
+                                                                <div class="medical-detail-item"><span class="medical-detail-label">需观察症状：</span><span class="medical-detail-content">@visit.SymptomsToMonitor</span></div>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(visit.MedicationReactionTracking))
+                                                            {
+                                                                <div class="medical-detail-item"><span class="medical-detail-label">服药反应跟踪：</span><span class="medical-detail-content">@visit.MedicationReactionTracking</span></div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                }
+                                                <!-- 操作按钮 -->
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <a href="/Doctor/Visits/Treatment/@visit.VisitId" class="medical-btn medical-btn-outline-primary">
+                                                            <i class="fas fa-eye me-1"></i>查看详情
+                                                        </a>
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        创建时间：@visit.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="medical-empty-state">
+                            <i class="fas fa-file-medical text-muted"></i>
+                            <p class="text-muted mt-3">暂无就诊记录</p>
+                            <a href="/Doctor/Visits/Create?patientId=@Model.Patient.Id&seriesId=@Model.VisitSeries.SeriesId" class="medical-btn medical-btn-primary">
+                                <i class="fas fa-plus me-1"></i>添加首次就诊记录
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-end">
+                <a href="/Doctor/Patient/Detail/@Model.Patient.Id" class="btn btn-secondary">
+                    <i class="ri-arrow-left-line me-1"></i>返回患者详情
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 结束序列模态框 -->
+<div class="modal fade" id="endSeriesModal" tabindex="-1" aria-labelledby="endSeriesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content medical-card">
+            <div class="medical-card-header">
+                <i class="fas fa-stop-circle me-2"></i>结束就诊序列
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="EndSeries">
+                <input type="hidden" name="id" value="@Model.VisitSeries.SeriesId" />
+                <div class="medical-card-body">
+                    <div class="alert alert-warning shadow-sm">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>注意：</strong>结束序列后将无法再添加新的就诊记录，请确认是否继续？
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-muted">确认要结束此就诊序列吗？结束后将无法再添加新的就诊记录。</p>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="medical-btn medical-btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>取消
+                    </button>
+                    <button type="submit" class="medical-btn medical-btn-danger">
+                        <i class="fas fa-stop-circle me-2"></i>确认结束
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

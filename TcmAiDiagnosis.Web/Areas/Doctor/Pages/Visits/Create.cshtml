@@ -1,0 +1,808 @@
+@page "{patientId:int}/{seriesId:int?}"
+@model TcmAiDiagnosis.Web.Areas.Doctor.Pages.Visits.CreateModel
+@{
+    ViewData["Title"] = "开始问诊";
+}
+
+<!-- 医疗系统样式已通过_Layout.cshtml统一引入 -->
+<!-- ========== title-wrapper start ========== -->
+<div class="title-wrapper pt-30">
+    <form method="post" asp-page-handler="SearchPatient">
+        <div class="row align-items-center">
+            <div class="col-md-8 row">
+                <div class="title col">
+                    <h2>开始问诊</h2>
+                </div>
+            </div>
+            <!-- end col -->
+            <div class="col-md-4">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="#0">问诊</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                开始问诊
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <!-- end col -->
+        </div>
+        <!-- end row -->
+    </form>
+</div>
+<!-- ========== title-wrapper end ========== -->
+<div class="medical-container mt-4">
+    <form method="post" asp-page-handler="UpdatePatient">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="medical-card">
+                    <div class="medical-card-header">
+                        <i class="fas fa-user-circle"></i>
+                        患者基础信息
+                    </div>
+                    <div class="medical-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-2 text-end">姓名：</div>
+                            <div class="col-md-3">@Model.Patient?.FullName</div>
+                            <div class="col-md-2 text-end">性别：</div>
+                            <div class="col-md-3">@Model.Patient?.Gender</div>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-2 text-end">联系方式：</div>
+                            <div class="col-md-3">@Model.Patient?.PhoneNumber</div>
+                            <div class="col-md-2 text-end">出生日期：</div>
+                            <div class="col-md-3">@(Model.Patient?.DateOfBirth?.ToString("yyyy-MM-dd"))</div>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-2 text-end">紧急联系人：</div>
+                            <div class="col-md-3">@(Model.Patient?.Detail.EmergencyContactName ?? "暂无")</div>
+                            <div class="col-md-2 text-end">电话：</div>
+                            <div class="col-md-3">@(Model.Patient?.Detail.EmergencyContactPhone ?? "暂无")</div>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-2 text-end">家庭住址：</div>
+                            <div class="col-md-8">@(Model.Patient?.Detail.HomeAddress ?? "未知")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="medical-card">
+                    <div class="medical-card-header">
+                        <i class="fas fa-history"></i>
+                        患者病史信息
+                    </div>
+                    <div class="medical-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-2 text-end">慢性病史：</div>
+                            <div class="col-md-8">@(Model.Patient?.Detail.PastMedicalHistory ?? "无")</div>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-2 text-end">传染病史：</div>
+                            <div class="col-md-8">@(Model.Patient?.Detail.InfectiousDiseaseHistory ?? "无")</div>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-2 text-end">过敏史：</div>
+                            <div class="col-md-8">@(Model.Patient?.Detail.AllergyHistory ?? "无")</div>
+                        </div>
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-2 text-end">家族病史：</div>
+                            <div class="col-md-8">@(Model.Patient?.Detail.FamilyMedicalHistory ?? "无")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col">
+                <div class="medical-card">
+                    <div class="medical-card-header">
+                        <i class="fas fa-stethoscope"></i>
+                        现病史信息采集
+                    </div>
+                    <div class="medical-card-body">
+                        <!-- 主诉症状部分 -->
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-clipboard-list"></i>
+                                症状描述
+                            </div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    <textarea class="form-control medical-form-control" rows="5" placeholder="请详细描述您的主要症状" name="NewVisit.ChiefComplaint"></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+                        
+                        <!-- 症状特点部分 -->
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-chart-line"></i>
+                                症状特点
+                            </div>
+                            <div class="row g-3 mb-4 align-items-center">
+                                <div class="col-md-4">
+                                    <div class="medical-input-group">
+                                        <span class="medical-input-group-text" style="min-width: 85px;">加重时间</span>
+                                        <select class="form-select medical-form-control" name="NewVisit.AggravationTime">
+                                            <option value="不固定" selected>不固定</option>
+                                            <option value="晨起">晨起</option>
+                                            <option value="午后">午后</option>
+                                            <option value="傍晚">傍晚</option>
+                                            <option value="夜间">夜间</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="medical-input-group">
+                                        <span class="medical-input-group-text" style="min-width: 85px;">气候关系</span>
+                                        <select class="form-select medical-form-control" name="NewVisit.ClimateRelationship">
+                                            <option value="无明显关系" selected>无明显关系</option>
+                                            <option value="寒冷加重">寒冷加重</option>
+                                            <option value="炎热加重">炎热加重</option>
+                                            <option value="潮湿加重">潮湿加重</option>
+                                            <option value="干燥加重">干燥加重</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="medical-input-group">
+                                        <span class="medical-input-group-text" style="min-width: 85px;">发病时间</span>
+                                        <input type="number" class="form-control medical-form-control" placeholder="天数" min="0" name="NewVisit.OnsetDays" />
+                                        <span class="medical-input-group-text">天</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 伴随症状部分 -->
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-plus-circle"></i>
+                                伴随症状
+                            </div>
+                            <div class="row g-3 mb-4 align-items-center">
+                                <div class="col-md-12">
+                                    <textarea class="form-control medical-form-control" rows="4" placeholder="请描述伴随症状，如发热、恶心、乏力等" name="NewVisit.AccompanyingSymptoms"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 既往治疗效果部分 -->
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-pills"></i>
+                                既往治疗效果
+                            </div>
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-12">
+                                    <textarea class="form-control medical-form-control" rows="4" placeholder="请描述既往治疗（如中药、西药、针灸等）的效果" name="NewVisit.PreviousTreatmentEffect"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col">
+                <div class="medical-card">
+                    <div class="medical-card-header">
+                        <i class="fas fa-user-md"></i>
+                        中医诊断检查
+                    </div>
+                    <div class="medical-card-body">
+                        <!-- 舌诊部分 -->
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-eye"></i>
+                                舌诊
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">舌质</label>
+                                    <select class="form-select medical-form-control" name="NewVisit.TongueQuality">
+                                        <option value="淡红舌" selected>淡红舌（正常）</option>
+                                        <option value="淡白舌">淡白舌</option>
+                                        <option value="红舌">红舌</option>
+                                        <option value="绛舌">绛舌</option>
+                                        <option value="青紫舌">青紫舌</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">舌苔</label>
+                                    <select class="form-select medical-form-control" name="NewVisit.TongueCoating">
+                                        <option value="薄白苔" selected>薄白苔（正常）</option>
+                                        <option value="无苔">无苔</option>
+                                        <option value="黄苔">黄苔</option>
+                                        <option value="厚腻苔">厚腻苔</option>
+                                        <option value="灰黑苔">灰黑苔</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-3">
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">舌形</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueShape" value="正常">
+                                            <span class="medical-check-label">正常</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueShape" value="胖大舌">
+                                            <span class="medical-check-label">胖大舌</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueShape" value="齿痕舌">
+                                            <span class="medical-check-label">齿痕舌</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueShape" value="瘦薄舌">
+                                            <span class="medical-check-label">瘦薄舌</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueShape" value="裂纹舌">
+                                            <span class="medical-check-label">裂纹舌</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">舌咽症状</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueSymptoms" value="口干">
+                                            <span class="medical-check-label">口干</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueSymptoms" value="咽燥">
+                                            <span class="medical-check-label">咽燥</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueSymptoms" value="口苦">
+                                            <span class="medical-check-label">口苦</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueSymptoms" value="口淡">
+                                            <span class="medical-check-label">口淡</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueSymptoms" value="口甜">
+                                            <span class="medical-check-label">口甜</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="TongueSymptoms" value="口黏腻">
+                                            <span class="medical-check-label">口黏腻</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-heartbeat"></i>
+                                脉诊
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">脉象</label>
+                                    <select class="form-select medical-form-control" name="NewVisit.PulseType">
+                                        <option value="平脉" selected>平脉（正常）</option>
+                                        <option value="浮脉">浮脉</option>
+                                        <option value="沉脉">沉脉</option>
+                                        <option value="迟脉">迟脉</option>
+                                        <option value="数脉">数脉</option>
+                                        <option value="虚脉">虚脉</option>
+                                        <option value="实脉">实脉</option>
+                                        <option value="滑脉">滑脉</option>
+                                        <option value="涩脉">涩脉</option>
+                                        <option value="弦脉">弦脉</option>
+                                        <option value="紧脉">紧脉</option>
+                                        <option value="缓脉">缓脉</option>
+                                        <option value="弱脉">弱脉</option>
+                                        <option value="细脉">细脉</option>
+                                        <option value="洪脉">洪脉</option>
+                                        <option value="结脉">结脉</option>
+                                        <option value="代脉">代脉</option>
+                                        <option value="促脉">促脉</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">脉象特征</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="有力">
+                                            <span class="medical-check-label">有力</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="无力">
+                                            <span class="medical-check-label">无力</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="滑">
+                                            <span class="medical-check-label">滑</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="涩">
+                                            <span class="medical-check-label">涩</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="结代">
+                                            <span class="medical-check-label">结代</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="弦急">
+                                            <span class="medical-check-label">弦急</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="细弱">
+                                            <span class="medical-check-label">细弱</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="濡软">
+                                            <span class="medical-check-label">濡软</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="疾数">
+                                            <span class="medical-check-label">疾数</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="缓怠">
+                                            <span class="medical-check-label">缓怠</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="PulseFeatures" value="浮大无根">
+                                            <span class="medical-check-label">浮大无根</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-dna"></i>
+                                体质评估
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <label class="medical-check">
+                                    <input type="checkbox" class="medical-check-input" name="Constitution" value="平和质" />
+                                    <span class="medical-check-label">平和质</span>
+                                </label>
+                                <label class="medical-check">
+                                    <input type="checkbox" class="medical-check-input" name="Constitution" value="气虚质" />
+                                    <span class="medical-check-label">气虚质</span>
+                                </label>
+                                <label class="medical-check">
+                                    <input type="checkbox" class="medical-check-input" name="Constitution" value="阳虚质" />
+                                    <span class="medical-check-label">阳虚质</span>
+                                </label>
+                                <label class="medical-check">
+                                    <input type="checkbox" class="medical-check-input" name="Constitution" value="阴虚质" />
+                                    <span class="medical-check-label">阴虚质</span>
+                                </label>
+                                <label class="medical-check">
+                                    <input type="checkbox" class="medical-check-input" name="Constitution" value="痰湿质" />
+                                    <span class="medical-check-label">痰湿质</span>
+                                </label>
+                                <label class="medical-check">
+                                    <input type="checkbox" class="medical-check-input" name="Constitution" value="湿热质" />
+                                    <span class="medical-check-label">湿热质</span>
+                                </label>
+                                <label class="medical-check">
+                                    <input type="checkbox" class="medical-check-input" name="Constitution" value="血瘀质" />
+                                    <span class="medical-check-label">血瘀质</span>
+                                </label>
+                                <label class="medical-check">
+                                    <input type="checkbox" class="medical-check-input" name="Constitution" value="气郁质" />
+                                    <span class="medical-check-label">气郁质</span>
+                                </label>
+                                <label class="medical-check">
+                                    <input type="checkbox" class="medical-check-input" name="Constitution" value="特禀质" />
+                                    <span class="medical-check-label">特禀质</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-eye"></i>
+                                面色与精神状态
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">面色</label>
+                                    <select class="form-select medical-form-control" name="NewVisit.FaceColor">
+                                        <option value="红润有光泽" selected>红润有光泽（正常）</option>
+                                        <option value="苍白">苍白</option>
+                                        <option value="潮红">潮红</option>
+                                        <option value="萎黄">萎黄</option>
+                                        <option value="晦暗">晦暗</option>
+                                        <option value="青紫">青紫</option>
+                                        <option value="黧黑">黧黑</option>
+                                        <option value="萎白">萎白</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">精神状态</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <label class="medical-check">
+                                            <input type="checkbox" name="MentalState" value="神清" class="medical-check-input">
+                                            <span class="medical-check-label">神清</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="MentalState" value="烦躁">
+                                            <span class="medical-check-label">烦躁</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="MentalState" value="萎靡">
+                                            <span class="medical-check-label">萎靡</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="MentalState" value="谵语">
+                                            <span class="medical-check-label">谵语</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="MentalState" value="嗜睡">
+                                            <span class="medical-check-label">嗜睡</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-bed"></i>
+                                睡眠与情绪状态
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">睡眠</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sleep" value="正常">
+                                            <span class="medical-check-label">正常</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sleep" value="入睡困难">
+                                            <span class="medical-check-label">入睡困难</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sleep" value="多梦易醒">
+                                            <span class="medical-check-label">多梦易醒</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sleep" value="早醒">
+                                            <span class="medical-check-label">早醒</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sleep" value="彻夜难眠">
+                                            <span class="medical-check-label">彻夜难眠</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sleep" value="嗜睡">
+                                            <span class="medical-check-label">嗜睡</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sleep" value="其他">
+                                            <span class="medical-check-label">其他</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">情绪状态</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="平和"> 
+                                            <span class="medical-check-label">平和（正常）</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="烦躁易怒">
+                                            <span class="medical-check-label">烦躁易怒</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="焦虑">
+                                            <span class="medical-check-label">焦虑</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="抑郁">
+                                            <span class="medical-check-label">抑郁</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="情绪低落">
+                                            <span class="medical-check-label">情绪低落</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="多虑">
+                                            <span class="medical-check-label">多虑</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="喜悲伤哭">
+                                            <span class="medical-check-label">喜悲伤哭</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="淡漠">
+                                            <span class="medical-check-label">淡漠</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="惊恐">
+                                            <span class="medical-check-label">惊恐</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="情绪高涨">
+                                            <span class="medical-check-label">情绪高涨</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="EmotionState" value="其他">
+                                            <span class="medical-check-label">其他</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-user-check"></i>
+                                形体与汗出
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">形体</label>
+                                    <select class="medical-form-control" name="NewVisit.BodyShape">
+                                        <option value="匀称" selected>匀称（正常）</option>
+                                        <option value="肥胖">肥胖</option>
+                                        <option value="瘦弱">瘦弱</option>
+                                        <option value="水肿">水肿</option>
+                                        <option value="畸形">畸形</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">汗出</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="正常">
+                                            <span class="medical-check-label">正常</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="自汗">
+                                            <span class="medical-check-label">自汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="盗汗">
+                                            <span class="medical-check-label">盗汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="无汗">
+                                            <span class="medical-check-label">无汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="多汗">
+                                            <span class="medical-check-label">多汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="头汗">
+                                            <span class="medical-check-label">头汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="手足心汗">
+                                            <span class="medical-check-label">手足心汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="半身汗">
+                                            <span class="medical-check-label">半身汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="黄汗">
+                                            <span class="medical-check-label">黄汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="黏汗">
+                                            <span class="medical-check-label">黏汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="冷汗">
+                                            <span class="medical-check-label">冷汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="热汗">
+                                            <span class="medical-check-label">热汗</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Sweating" value="其他">
+                                            <span class="medical-check-label">其他</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-utensils"></i>
+                                饮食与大小便
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">饮食</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="正常">
+                                            <span class="medical-check-label">正常</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="食欲不振">
+                                            <span class="medical-check-label">食欲不振</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="厌食">
+                                            <span class="medical-check-label">厌食</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="食量偏大">
+                                            <span class="medical-check-label">食量偏大</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="口渴喜饮">
+                                            <span class="medical-check-label">口渴喜饮</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="口不渴">
+                                            <span class="medical-check-label">口不渴</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="喜热饮">
+                                            <span class="medical-check-label">喜热饮</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="喜冷饮">
+                                            <span class="medical-check-label">喜冷饮</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="厌油腻">
+                                            <span class="medical-check-label">厌油腻</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="口味清淡">
+                                            <span class="medical-check-label">口味清淡</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="口味重">
+                                            <span class="medical-check-label">口味重</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="饥不欲食">
+                                            <span class="medical-check-label">饥不欲食</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="泛酸">
+                                            <span class="medical-check-label">泛酸</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="嗳气">
+                                            <span class="medical-check-label">嗳气</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="呃逆">
+                                            <span class="medical-check-label">呃逆</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="恶心">
+                                            <span class="medical-check-label">恶心</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="呕吐">
+                                            <span class="medical-check-label">呕吐</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Diet" value="其他">
+                                            <span class="medical-check-label">其他</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="medical-form-label">大小便</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="正常">
+                                            <span class="medical-check-label">正常</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="便秘">
+                                            <span class="medical-check-label">便秘</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="大便干结">
+                                            <span class="medical-check-label">大便干结</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="腹泻">
+                                            <span class="medical-check-label">腹泻</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="大便溏薄">
+                                            <span class="medical-check-label">大便溏薄</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="大便稀溏小便清长">
+                                            <span class="medical-check-label">大便稀溏 小便清长</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="大便干结小便短赤">
+                                            <span class="medical-check-label">大便干结 小便短赤</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="大便粘滞小便黄赤">
+                                            <span class="medical-check-label">大便粘滞 小便黄赤</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="小便不利">
+                                            <span class="medical-check-label">小便不利</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="尿频尿急">
+                                            <span class="medical-check-label">尿频尿急</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="尿少浮肿">
+                                            <span class="medical-check-label">尿少浮肿</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="尿血">
+                                            <span class="medical-check-label">尿血</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="尿痛">
+                                            <span class="medical-check-label">尿痛</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="排便不畅">
+                                            <span class="medical-check-label">排便不畅</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="里急后重">
+                                            <span class="medical-check-label">里急后重</span>
+                                        </label>
+                                        <label class="medical-check">
+                                            <input type="checkbox" class="medical-check-input" name="Excretion" value="其他">
+                                            <span class="medical-check-label">其他</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="medical-section">
+                            <div class="medical-section-title">
+                                <i class="fas fa-notes-medical"></i>
+                                其他描述
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <textarea class="form-control medical-form-control" name="NewVisit.OtherDescription" rows="3" placeholder="请填写其他相关症状或描述..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <button type="submit" class="medical-btn medical-btn-primary medical-btn-lg">
+                <i class="fas fa-robot me-2"></i>
+                AI 诊断
+            </button>
+        </div>
+    </form>
+</div>

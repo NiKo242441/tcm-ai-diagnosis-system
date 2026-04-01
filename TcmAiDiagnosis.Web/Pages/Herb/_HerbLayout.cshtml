@@ -1,0 +1,19 @@
+﻿﻿@{
+Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="main-content">
+        @RenderBody()
+    </div>
+</div>
+
+<style>
+    .main-content {
+        padding: 20px;
+    }
+</style>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

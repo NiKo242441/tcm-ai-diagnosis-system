@@ -1,0 +1,527 @@
+@page
+@model TcmAiDiagnosis.Web.Areas.Doctor.Pages.Patient.IndexModel
+@{
+    ViewData["Title"] = "患者管理";
+}
+
+<div class="container-fluid">
+    <div class="title-wrapper pt-30">
+        <div class="row align-items-center">
+            <div class="col-md-8 row">
+                <div class="title col">
+                    <h2><i class="fas fa-users me-2"></i>患者管理</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="#0"><i class="fas fa-home me-1"></i>医生工作台</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                患者管理
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="medical-container">
+        <div class="medical-card">
+            <div class="medical-card-body">
+                <!-- 防伪令牌 -->
+                @Html.AntiForgeryToken()
+                
+                <!-- 患者类型切换标签页与操作按钮 -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <!-- 左侧：患者类型切换标签页 -->
+                    <div class="flex-grow-1">
+                        <ul class="nav nav-tabs" id="patientTypeTabs" role="tablist" style="border-bottom: none;">
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link @(!Model.IsTenant ? "active" : "")" 
+                                   href="?isTenant=false&search=@Model.SearchKeyword&page=1" 
+                                   role="tab">
+                                    <i class="fas fa-user-md me-1"></i>医生患者 (@(!Model.IsTenant ? Model.Patients.Count : 0))
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link @(Model.IsTenant ? "active" : "")" 
+                                   href="?isTenant=true&search=@Model.SearchKeyword&page=1" 
+                                   role="tab">
+                                    <i class="fas fa-hospital me-1"></i>机构患者 (@(Model.IsTenant ? Model.Patients.Count : 0))
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 右侧：操作按钮 -->
+                    <div class="d-flex align-items-center gap-2 ms-3">
+                        <form method="get" class="d-flex">
+                            <input type="hidden" name="isTenant" value="@Model.IsTenant">
+                            <input type="text" name="search" class="medical-form-control me-2" placeholder="搜索患者..." value="@Model.SearchKeyword" style="width: 200px;" />
+                            <button type="submit" class="medical-btn medical-btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                        <button type="button" class="medical-btn medical-btn-primary" onclick="showPhoneInputModal()">
+                            <i class="fas fa-user-plus me-1"></i>添加患者
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 分隔线 -->
+                <hr class="mb-3" style="margin-top: 0;">
+
+                <!-- 患者列表 -->
+                @if (Model.Patients.Count > 0)
+                {
+                    <div class="row g-3">
+                        @foreach (var patient in Model.Patients)
+                        {
+                            <div class="col-xl-4 col-lg-6">
+                                <div class="medical-card">
+                                    <div class="medical-card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-sm me-3" style="width: 48px; height: 48px;">
+                                <span class="avatar-title rounded-circle text-white d-flex align-items-center justify-content-center" style="background-color: var(--medical-primary); width: 100%; height: 100%; font-size: 1.2rem; font-weight: 600;">
+                                    @(patient.FullName?.Substring(0, 1) ?? "患")
+                                </span>
+                            </div>
+                                            <div class="flex-1">
+                                                <h5 class="mb-1" style="color: var(--medical-text);">@(patient.FullName ?? "未设置")</h5>
+                                                <p class="mb-0" style="color: var(--medical-text-secondary);">
+                                                    <i class="fas fa-phone me-1"></i>@patient.PhoneNumber
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row text-center mb-3">
+                                            <div class="col-4">
+                                                <p class="mb-1" style="color: var(--medical-text-secondary); font-size: 0.9rem;">性别</p>
+                                                <h6 class="mb-0" style="color: var(--medical-text);">@(patient.Gender ?? "未知")</h6>
+                                            </div>
+                                            <div class="col-4">
+                                                <p class="mb-1" style="color: var(--medical-text-secondary); font-size: 0.9rem;">年龄</p>
+                                                <h6 class="mb-0" style="color: var(--medical-text);">
+                                                    @{
+                                                        var age = patient.DateOfBirth.HasValue ? DateTime.Now.Year - patient.DateOfBirth.Value.Year : 0;
+                                                    }
+                                                    @age 岁
+                                                </h6>
+                                            </div>
+                                            <div class="col-4">
+                                                <p class="mb-1" style="color: var(--medical-text-secondary); font-size: 0.9rem;">最后就诊</p>
+                                                <h6 class="mb-0" style="color: var(--medical-text);">暂无</h6>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <a href="/Doctor/Patient/Detail/@patient.Id" class="medical-btn medical-btn-primary flex-fill" style="font-size: 0.85rem; padding: 8px 12px;">
+                                                <i class="fas fa-eye me-1"></i>详情
+                                            </a>
+                                            <a href="/Doctor/Patient/VisitSeries/@patient.Id" class="medical-btn medical-btn-primary flex-fill" style="font-size: 0.85rem; padding: 8px 12px;">
+                                                <i class="fas fa-clipboard-list me-1"></i>问诊记录
+                                            </a>
+                                            <button type="button" class="medical-btn medical-btn-primary flex-fill" style="font-size: 0.85rem; padding: 8px 12px;">
+                                                <i class="fas fa-robot me-1"></i>AI医案
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                        <!-- 分页 -->
+                        @if (Model.TotalPages > 1)
+                        {
+                            <div class="row mt-3">
+                                <div class="col-sm-6">
+                                    <div class="dataTables_info">
+                                        显示第 @((Model.CurrentPage - 1) * Model.PageSize + 1) - @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount)) 条，共 @Model.TotalCount 条记录
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="dataTables_paginate paging_simple_numbers float-end">
+                                        <ul class="pagination pagination-rounded">
+                                            @if (Model.CurrentPage > 1)
+                                            {
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=@(Model.CurrentPage - 1)&search=@Model.SearchKeyword&isTenant=@HttpContext.Request.Query["isTenant"]">上一页</a>
+                                                </li>
+                                            }
+                                            
+                                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                                            {
+                                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                                    <a class="page-link" href="?page=@i&search=@Model.SearchKeyword&isTenant=@HttpContext.Request.Query["isTenant"]">@i</a>
+                                                </li>
+                                            }
+                                            
+                                            @if (Model.CurrentPage < Model.TotalPages)
+                                            {
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=@(Model.CurrentPage + 1)&search=@Model.SearchKeyword&isTenant=@HttpContext.Request.Query["isTenant"]">下一页</a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="mdi mdi-account-off mdi-48px text-muted"></i>
+                            <h5 class="mt-3 text-muted">暂无患者数据</h5>
+                            <p class="text-muted">您可以点击"新建患者"按钮添加新患者，或使用"添加平台患者"功能添加已有患者。</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 手机号输入弹框 -->
+<div class="modal fade" id="phoneInputModal" tabindex="-1" aria-labelledby="phoneInputModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: var(--medical-primary); color: white !important;">
+                <h5 class="modal-title" id="phoneInputModalLabel" style="color: white !important;">
+                    <i class="fas fa-user-plus me-2"></i>添加患者
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 25px 30px;">
+                <div class="text-center mb-4">
+                    <i class="fas fa-mobile-alt" style="font-size: 3rem; color: var(--medical-primary);"></i>
+                    <h6 class="mt-3 mb-2" style="color: var(--medical-text);">请输入患者手机号</h6>
+                    <p class="text-muted mb-0">我们将查询平台中是否已有该患者信息</p>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="medical-form-label">手机号码</label>
+                    <div class="medical-input-group">
+                        <span class="medical-input-group-text">
+                            <i class="fas fa-phone"></i>
+                        </span>
+                        <input type="tel" class="medical-form-control" id="patientPhoneInput" placeholder="请输入11位手机号码" maxlength="11">
+                    </div>
+                    <div class="invalid-feedback" id="phoneValidationMessage"></div>
+                </div>
+                
+                <div id="searchResultArea" style="display: none;">
+                    <div class="medical-section">
+                        <div class="medical-section-title">
+                            <i class="fas fa-search"></i>
+                            查询结果
+                        </div>
+                        <div id="patientSearchResult"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 20px 30px;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="medical-btn medical-btn-primary" onclick="searchPatientByPhone()" id="searchPatientBtn">
+                    <i class="fas fa-search me-1"></i>查询患者
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 搜索功能
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const patientCards = document.querySelectorAll('.col-xl-4');
+            
+            patientCards.forEach(card => {
+                const patientName = card.querySelector('h5').textContent.toLowerCase();
+                const patientPhone = card.querySelector('p').textContent.toLowerCase();
+                
+                if (patientName.includes(searchTerm) || patientPhone.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // 手机号输入框实时验证
+    const phoneInput = document.getElementById('patientPhoneInput');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            const phone = this.value.trim();
+            const validationMessage = document.getElementById('phoneValidationMessage');
+            const searchBtn = document.getElementById('searchPatientBtn');
+            
+            // 清除之前的搜索结果
+            document.getElementById('searchResultArea').style.display = 'none';
+            
+            if (phone.length === 0) {
+                this.classList.remove('is-invalid', 'is-valid');
+                validationMessage.textContent = '';
+                searchBtn.disabled = true;
+            } else if (!/^1[3-9]\d{9}$/.test(phone)) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+                validationMessage.textContent = '请输入正确的11位手机号码';
+                searchBtn.disabled = true;
+            } else {
+                this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
+                validationMessage.textContent = '';
+                searchBtn.disabled = false;
+            }
+        });
+        
+        // 回车键搜索
+        phoneInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !document.getElementById('searchPatientBtn').disabled) {
+                searchPatientByPhone();
+            }
+        });
+    }
+});
+
+// 显示手机号输入弹框
+function showPhoneInputModal() {
+    const modal = new bootstrap.Modal(document.getElementById('phoneInputModal'));
+    // 重置表单
+    document.getElementById('patientPhoneInput').value = '';
+    document.getElementById('patientPhoneInput').classList.remove('is-invalid', 'is-valid');
+    document.getElementById('phoneValidationMessage').textContent = '';
+    document.getElementById('searchResultArea').style.display = 'none';
+    document.getElementById('searchPatientBtn').disabled = true;
+    modal.show();
+}
+
+// 根据手机号搜索患者
+function searchPatientByPhone() {
+    const phone = document.getElementById('patientPhoneInput').value.trim();
+    const searchBtn = document.getElementById('searchPatientBtn');
+    const resultArea = document.getElementById('searchResultArea');
+    const resultContainer = document.getElementById('patientSearchResult');
+    
+    if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+        return;
+    }
+    
+    // 显示加载状态
+    searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>查询中...';
+    searchBtn.disabled = true;
+    
+    // 发送搜索请求
+    fetch('/Doctor/Patient?handler=SearchPatientByPhone', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify({ phoneNumber: phone })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('搜索结果:', data); // 添加调试日志
+        
+        // 检查API返回的数据格式
+        if (data && data.success && data.data && Array.isArray(data.data) && data.data.length > 0) {
+            // API返回格式: { success: true, data: [...] }
+            const patient = data.data[0]; // 取第一个患者
+            // 找到患者，显示患者信息和添加按钮
+            displayFoundPatient(patient);
+        } else if (data && data.success && data.patient) {
+            // 备用格式: { success: true, patient: {...} }
+            displayFoundPatient(data.patient);
+        } else if (data && data.patient) {
+            // 备用格式: { patient: {...} }
+            displayFoundPatient(data.patient);
+        } else {
+            // 未找到患者，显示创建新患者的选项
+            displayCreateNewPatient(phone);
+        }
+        resultArea.style.display = 'block';
+    })
+    .catch(error => {
+        console.error('搜索失败:', error);
+        alert('搜索失败，请重试');
+    })
+    .finally(() => {
+        // 恢复按钮状态
+        searchBtn.innerHTML = '<i class="fas fa-search me-1"></i>查询患者';
+        searchBtn.disabled = false;
+    });
+}
+
+// 显示找到的患者信息
+function displayFoundPatient(patient) {
+    const resultContainer = document.getElementById('patientSearchResult');
+    
+    // 适配不同的字段名格式
+    const patientId = patient.patientId || patient.id;
+    const fullName = patient.fullName;
+    const phoneNumber = patient.phoneNumber;
+    const gender = patient.gender;
+    const dateOfBirth = patient.dateOfBirth;
+    const canAddToCurrentTenant = patient.canAddToCurrentTenant;
+    const isLinkedToCurrentTenant = patient.isLinkedToCurrentTenant;
+    
+    // 计算年龄
+    let ageText = '未知';
+    if (dateOfBirth) {
+        const birthDate = new Date(dateOfBirth);
+        const age = new Date().getFullYear() - birthDate.getFullYear();
+        ageText = age + ' 岁';
+    }
+    
+    // 根据患者状态显示不同的按钮和信息
+    let statusText = '平台患者';
+    let buttonHtml = '';
+    
+    if (isLinkedToCurrentTenant) {
+        statusText = '已关联';
+        buttonHtml = `
+            <div class="d-flex gap-2">
+                <a href="/Doctor/Patient/Detail/${patientId}" class="medical-btn medical-btn-primary flex-fill">
+                    <i class="fas fa-eye me-1"></i>查看详情
+                </a>
+                <a href="/Doctor/Visits/Create/${patientId}" class="medical-btn medical-btn-success flex-fill">
+                    <i class="fas fa-stethoscope me-1"></i>开始问诊
+                </a>
+            </div>
+        `;
+    } else if (canAddToCurrentTenant) {
+        buttonHtml = `
+            <div class="d-flex gap-2">
+                <a href="/Doctor/Patient/Detail/${patientId}" class="medical-btn medical-btn-primary flex-fill">
+                    <i class="fas fa-eye me-1"></i>查看详情
+                </a>
+                <a href="/Doctor/Visits/Create/${patientId}" class="medical-btn medical-btn-success flex-fill">
+                    <i class="fas fa-stethoscope me-1"></i>开始问诊
+                </a>
+            </div>
+        `;
+    } else {
+        buttonHtml = `
+            <div class="d-flex gap-2">
+                <a href="/Doctor/Patient/Detail/${patientId}" class="medical-btn medical-btn-primary flex-fill">
+                    <i class="fas fa-eye me-1"></i>查看详情
+                </a>
+                <a href="/Doctor/Visits/Create/${patientId}" class="medical-btn medical-btn-success flex-fill">
+                    <i class="fas fa-stethoscope me-1"></i>开始问诊
+                </a>
+            </div>
+        `;
+    }
+    
+    resultContainer.innerHTML = `
+        <div class="medical-card">
+            <div class="medical-card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm me-3" style="width: 48px; height: 48px;">
+                            <span class="avatar-title rounded-circle text-white d-flex align-items-center justify-content-center" style="background-color: var(--medical-success); width: 100%; height: 100%; font-size: 1.2rem; font-weight: 600;">
+                                ${fullName ? fullName.substring(0, 1) : '患'}
+                            </span>
+                        </div>
+                        <div>
+                            <h6 class="mb-1" style="color: var(--medical-text);">${fullName || '未设置姓名'}</h6>
+                            <p class="mb-0" style="color: var(--medical-text-secondary);">
+                                <i class="fas fa-phone me-1"></i>${phoneNumber}
+                            </p>
+                        </div>
+                    </div>
+                    <span class="badge" style="background-color: var(--medical-success);">
+                        <i class="fas fa-check me-1"></i>已找到
+                    </span>
+                </div>
+                
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <p class="mb-1" style="color: var(--medical-text-secondary); font-size: 0.9rem;">性别</p>
+                        <h6 class="mb-0" style="color: var(--medical-text);">${gender || '未知'}</h6>
+                    </div>
+                    <div class="col-4">
+                        <p class="mb-1" style="color: var(--medical-text-secondary); font-size: 0.9rem;">年龄</p>
+                        <h6 class="mb-0" style="color: var(--medical-text);">${ageText}</h6>
+                    </div>
+                    <div class="col-4">
+                        <p class="mb-1" style="color: var(--medical-text-secondary); font-size: 0.9rem;">状态</p>
+                        <h6 class="mb-0" style="color: var(--medical-success);">${statusText}</h6>
+                    </div>
+                </div>
+                
+                ${buttonHtml}
+            </div>
+        </div>
+    `;
+}
+
+// 显示创建新患者的选项
+function displayCreateNewPatient(phone) {
+    const resultContainer = document.getElementById('patientSearchResult');
+    resultContainer.innerHTML = `
+        <div class="text-center py-4">
+            <i class="fas fa-user-slash" style="font-size: 3rem; color: var(--medical-text-secondary);"></i>
+            <h6 class="mt-3 mb-2" style="color: var(--medical-text);">未找到该手机号的患者</h6>
+            <p class="text-muted mb-4">该手机号在平台中尚未注册，您可以创建新的患者档案</p>
+            
+            <button type="button" class="medical-btn medical-btn-primary" onclick="createNewPatient('${phone}')">
+                <i class="fas fa-user-plus me-1"></i>创建新患者档案
+            </button>
+        </div>
+    `;
+}
+
+// 添加患者到当前租户
+function addPatientToCurrentTenant(patientId) {
+    if (!confirm('确定要将此患者添加到您的患者列表吗？')) {
+        return;
+    }
+    
+    fetch('/Doctor/Patient?handler=AddExistingPatient', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify({ patientId: patientId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('患者添加成功！');
+            // 关闭模态框并刷新页面
+            const modal = bootstrap.Modal.getInstance(document.getElementById('phoneInputModal'));
+            modal.hide();
+            location.reload();
+        } else {
+            alert(data.message || '添加失败，请重试');
+        }
+    })
+    .catch(error => {
+        console.error('添加失败:', error);
+        alert('添加失败，请重试');
+    });
+}
+
+// 创建新患者
+function createNewPatient(phone) {
+    // 关闭当前弹框
+    const modal = bootstrap.Modal.getInstance(document.getElementById('phoneInputModal'));
+    modal.hide();
+    
+    // 跳转到创建患者页面，并预填手机号
+    window.location.href = `/Doctor/Patient/Create?phoneNumber=${encodeURIComponent(phone)}`;
+}
+</script>

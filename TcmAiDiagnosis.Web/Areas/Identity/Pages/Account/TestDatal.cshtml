@@ -1,0 +1,141 @@
+﻿6[]'/g'/TestData"
+@model TcmAiDiagnosis.Web.Areas.Identity.Pages.Account.TestDataModel
+@{
+    ViewData["Title"] = "测试数据初始化";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">测试数据初始化</h4>
+                </div>
+                <div class="card-body">
+                    <!-- 消息显示 -->
+                    @if (!string.IsNullOrEmpty(Model.Message))
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill"></i> @Model.Message
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> @Model.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <!-- 第一步：创建角色 -->
+                    <div class="card mb-4 border-info">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">第一步：创建系统角色</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">创建系统必要的角色：</p>
+                            <ul class="small">
+                                <li><strong>Doctor</strong> - 显示名称: 医生</li>
+                                <li><strong>Patient</strong> - 显示名称: 患者</li>
+                                <li><strong>Manager</strong> - 显示名称: 管理员</li>
+                            </ul>
+                            <form method="post" class="d-inline">
+                                <button type="submit" asp-page-handler="CreateRoles"
+                                        class="btn btn-info">
+                                    <i class="bi bi-shield-plus"></i> 创建系统角色
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- 在角色创建部分添加检查按钮 -->
+                    <div class="mt-2">
+                        <form method="post" class="d-inline">
+                            <button type="submit" asp-page-handler="CheckRoles"
+                                    class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-search"></i> 检查现有角色
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- 第二步：创建数据 -->
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">创建租户</h5>
+                                    <p class="card-text text-muted small">
+                                        创建测试租户：中原工学院校医院
+                                    </p>
+                                    <form method="post" class="d-inline">
+                                        <button type="submit" asp-page-handler="CreateTenant"
+                                                class="btn btn-outline-primary">
+                                            创建租户
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">创建医生</h5>
+                                    <p class="card-text text-muted small">
+                                        创建测试医生：乔宽医生
+                                        <br>密码：Test@123456
+                                    </p>
+                                    <form method="post" class="d-inline">
+                                        <button type="submit" asp-page-handler="CreateDoctor"
+                                                class="btn btn-outline-success">
+                                            创建医生
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card h-100 border-warning">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title text-warning">一键创建全部</h5>
+                                    <p class="card-text text-muted small">
+                                        按正确顺序创建所有数据
+                                        <br>包含角色、租户、医生
+                                    </p>
+                                    <form method="post" class="d-inline">
+                                        <button type="submit" asp-page-handler="CreateAll"
+                                                class="btn btn-warning">
+                                            <i class="bi bi-lightning-fill"></i> 一键创建
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 执行顺序说明 -->
+                    <div class="mt-4">
+                        <h6>执行顺序说明：</h6>
+                        <ol class="small text-muted">
+                            <li><strong>必须先创建角色</strong>，然后才能创建用户</li>
+                            <li>单独创建用户时，请确保对应角色已存在</li>
+                            <li>使用"一键创建全部"会自动按正确顺序执行</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 安全警告 -->
+            <div class="alert alert-warning mt-3" role="alert">
+                <h6 class="alert-heading">
+                    <i class="bi bi-shield-exclamation"></i> 安全提醒
+                </h6>
+                <p class="mb-0 small">
+                    此页面仅用于开发环境测试数据初始化。生产环境请确保禁用或删除此页面。
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

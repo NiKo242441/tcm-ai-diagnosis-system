@@ -1,0 +1,244 @@
+@page "{patientId:int}"
+@model TcmAiDiagnosis.Web.Areas.Doctor.Pages.Patient.DetailModel
+@{
+    ViewData["Title"] = "患者详情";
+}
+
+<div class="title-wrapper pt-30">
+    <div class="row align-items-center">
+        <div class="col-md-8 row">
+            <div class="title col">
+                <h2><i class="fas fa-user-circle me-2"></i>患者详情</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="breadcrumb-wrapper">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="#0"><i class="fas fa-users me-1"></i>患者</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">
+                            患者详情
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="medical-container mt-4">
+    <form method="post" asp-page-handler="UpdatePatient">
+        <input type="hidden" asp-for="Patient.Id" value="@(Model.Patient?.Id ?? 0)" />
+        
+        <!-- 患者基础信息卡片 -->
+        <div class="medical-card">
+            <div class="medical-card-header">
+                <i class="fas fa-user"></i>
+                患者基础信息
+            </div>
+            <div class="medical-card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="medical-form-label">
+                            <i class="fas fa-id-card"></i>
+                            患者姓名
+                        </label>
+                        <input type="text" class="medical-form-control" asp-for="Patient.FullName" 
+                               value="@(Model.Patient?.FullName)" placeholder="请输入患者姓名" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="medical-form-label">
+                            <i class="fas fa-venus-mars"></i>
+                            性别
+                        </label>
+                        <select class="medical-form-control compact" asp-for="Patient.Gender">
+                            <option value="">请选择性别</option>
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <label class="medical-form-label">
+                            <i class="fas fa-phone"></i>
+                            联系方式
+                        </label>
+                        <div class="medical-input-group">
+                            <span class="medical-input-group-text">
+                                <i class="fas fa-mobile-alt"></i>
+                            </span>
+                            <input type="tel" class="medical-form-control" asp-for="Patient.PhoneNumber" 
+                                   value="@(Model.Patient?.PhoneNumber)" placeholder="请输入11位手机号码" required />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="medical-form-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            出生日期
+                        </label>
+                        <input type="date" class="medical-form-control" asp-for="Patient.DateOfBirth" 
+                               value="@(Model.Patient?.DateOfBirth?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <label class="medical-form-label">
+                            <i class="fas fa-user-friends"></i>
+                            紧急联系人姓名
+                        </label>
+                        <input type="text" class="medical-form-control" asp-for="Patient.Detail.EmergencyContactName" 
+                               value="@(Model.Patient?.Detail?.EmergencyContactName)" placeholder="请输入紧急联系人姓名" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="medical-form-label">
+                            <i class="fas fa-phone-alt"></i>
+                            紧急联系人电话
+                        </label>
+                        <div class="medical-input-group">
+                            <span class="medical-input-group-text">
+                                <i class="fas fa-phone"></i>
+                            </span>
+                            <input type="tel" class="medical-form-control" asp-for="Patient.Detail.EmergencyContactPhone" 
+                                   value="@(Model.Patient?.Detail?.EmergencyContactPhone)" placeholder="请输入11位手机号码" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-3">
+                    <div class="col-12">
+                        <label class="medical-form-label">
+                            <i class="fas fa-home"></i>
+                            家庭住址
+                        </label>
+                        <input type="text" class="medical-form-control" asp-for="Patient.Detail.HomeAddress" 
+                               value="@(Model.Patient?.Detail?.HomeAddress)" placeholder="请输入详细家庭住址" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 患者病史信息卡片 -->
+        <div class="medical-card">
+            <div class="medical-card-header">
+                <i class="fas fa-history"></i>
+                患者病史信息
+            </div>
+            <div class="medical-card-body">
+                <!-- 慢性病史 -->
+                <div class="medical-section">
+                    <div class="medical-section-title">
+                        <i class="fas fa-heartbeat"></i>
+                        慢性病史
+                    </div>
+                    <div class="row g-3">
+                        @foreach (var history in Model.ChronicDiseases)
+                        {
+                            <div class="col-md-3">
+                                <div class="medical-check">
+                                    <input type="checkbox" class="medical-check-input"
+                                           name="SelectedChronicDiseases"
+                                           value="@history.Name" id="chronic_@history.Name"
+                                           @(Model.SelectedChronicDiseases.Contains(history.Name) ? "checked" : "") />
+                                    <label class="medical-check-label" for="chronic_@history.Name">@history.Name</label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- 传染病史 -->
+                <div class="medical-section">
+                    <div class="medical-section-title">
+                        <i class="fas fa-virus"></i>
+                        传染病史
+                    </div>
+                    <div class="row g-3">
+                        @foreach (var history in Model.InfectiousDiseases)
+                        {
+                            <div class="col-md-3">
+                                <div class="medical-check">
+                                    <input type="checkbox" class="medical-check-input"
+                                           name="SelectedInfectiousDiseases"
+                                           value="@history.Name" id="infectious_@history.Name"
+                                           @(Model.SelectedInfectiousDiseases.Contains(history.Name) ? "checked" : "") />
+                                    <label class="medical-check-label" for="infectious_@history.Name">@history.Name</label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- 过敏史 -->
+                <div class="medical-section">
+                    <div class="medical-section-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        过敏史
+                    </div>
+                    <div class="row g-3">
+                        @foreach (var history in Model.AllergyHistories)
+                        {
+                            <div class="col-md-3">
+                                <div class="medical-check">
+                                    <input type="checkbox" class="medical-check-input"
+                                           name="SelectedAllergyHistories"
+                                           value="@history.Name" id="allergy_@history.Name"
+                                           @(Model.SelectedAllergyHistories.Contains(history.Name) ? "checked" : "") />
+                                    <label class="medical-check-label" for="allergy_@history.Name">@history.Name</label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- 家族病史 -->
+                <div class="medical-section">
+                    <div class="medical-section-title">
+                        <i class="fas fa-users"></i>
+                        家族病史
+                    </div>
+                    <div class="row g-3">
+                        @foreach (var history in Model.FamilyHistories)
+                        {
+                            <div class="col-md-3">
+                                <div class="medical-check">
+                                    <input type="checkbox" class="medical-check-input"
+                                           name="SelectedFamilyHistories"
+                                           value="@history.Name" id="family_@history.Name"
+                                           @(Model.SelectedFamilyHistories.Contains(history.Name) ? "checked" : "") />
+                                    <label class="medical-check-label" for="family_@history.Name">@history.Name</label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- 操作按钮 -->
+        <div class="text-end mt-4">
+            <a asp-page="Index" class="medical-btn medical-btn-secondary me-3">
+                <i class="fas fa-arrow-left"></i>
+                返回列表
+            </a>
+            <a asp-page="VisitSeries" asp-route-patientId="@(Model.Patient?.Id ?? 0)" class="medical-btn medical-btn-info me-3">
+                <i class="fas fa-file-medical-alt"></i>
+                就诊记录
+            </a>
+            <button type="submit" id="save-btn" class="medical-btn medical-btn-primary me-3">
+                <i class="fas fa-save"></i>
+                保存信息
+            </button>
+            <a href="/Doctor/Visits/Create?patientId=@(Model.Patient?.Id ?? 0)" class="medical-btn medical-btn-success">
+                <i class="fas fa-stethoscope"></i>
+                开始问诊
+            </a>
+        </div>
+     </form>
+ </div>

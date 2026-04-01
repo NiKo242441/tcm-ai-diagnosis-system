@@ -1,0 +1,276 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.Appointments.IndexModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "预约挂号管理";
+
+    // 获取查询参数
+    var query = ViewContext.HttpContext.Request.Query;
+    var status = query["status"].ToString();
+    var doctorId = query["doctorId"].ToString();
+    var startDate = query["startDate"].ToString();
+    var endDate = query["endDate"].ToString();
+    var search = query["search"].ToString();
+
+    // 设置默认日期
+    if (string.IsNullOrEmpty(startDate))
+        startDate = DateTime.Now.ToString("yyyy-MM-dd");
+    if (string.IsNullOrEmpty(endDate))
+        endDate = DateTime.Now.AddDays(7).ToString("yyyy-MM-dd");
+}
+
+<h2 class="mb-3">预约挂号管理</h2>
+
+<!-- 筛选和搜索区域 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">状态</label>
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">全部状态</option>
+                    <option value="待就诊" selected="@(status == "待就诊")">待就诊</option>
+                    <option value="已完成" selected="@(status == "已完成")">已完成</option>
+                    <option value="已取消" selected="@(status == "已取消")">已取消</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">医生</label>
+                <select name="doctorId" class="form-select" onchange="this.form.submit()">
+                    <option value="">全部医生</option>
+                    <option value="1" selected="@(doctorId == "1")">张医生</option>
+                    <option value="2" selected="@(doctorId == "2")">李医生</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">开始日期</label>
+                <input type="date" name="startDate" class="form-control"
+                       value="@startDate" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">结束日期</label>
+                <input type="date" name="endDate" class="form-control"
+                       value="@endDate" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">患者姓名/GUID</label>
+                <input type="text" name="search" class="form-control"
+                       placeholder="搜索..." value="@search" />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">筛选</button>
+                @if (!string.IsNullOrEmpty(status) || !string.IsNullOrEmpty(doctorId) ||
+                                !string.IsNullOrEmpty(startDate) || !string.IsNullOrEmpty(search))
+                {
+                    <a href="@Url.Page("Index")" class="btn btn-outline-secondary w-100 mt-2">清除筛选</a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 操作按钮和统计信息 -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a asp-page="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> 新建预约
+        </a>
+        <a asp-page="Statistics" class="btn btn-outline-info ms-2">
+            <i class="bi bi-bar-chart"></i> 统计视图
+        </a>
+    </div>
+    <div class="text-muted">
+        共 <strong>@Model.Appointments.Count</strong> 条预约记录
+        <span class="badge bg-warning ms-2">待就诊: @Model.Appointments.Count(a => a.Status == "待就诊")</span>
+    </div>
+</div>
+
+<!-- 预约列表 -->
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>预约ID</th>
+                <th>患者信息</th>
+                <th>医生</th>
+                <th>预约时间</th>
+                <th>类型</th>
+                <th>状态</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Appointments.Any())
+            {
+                @foreach (var item in Model.Appointments)
+                {
+                    <tr class="@(item.IsExpired() ? "table-warning" : "")">
+                        <td>
+                            <strong>@item.AppointmentId</strong>
+                            @if (item.AppointmentType == "初诊")
+                            {
+                                <span class="badge bg-info ms-1">新</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="fw-bold">@item.PatientGuid</div>
+                            @if (!string.IsNullOrEmpty(item.Symptoms))
+                            {
+                                <small class="text-muted" title="@item.Symptoms">
+                                    @(item.Symptoms.Length > 20 ? item.Symptoms.Substring(0, 20) + "..." : item.Symptoms)
+                                </small>
+                            }
+                            @if (!string.IsNullOrEmpty(item.ContactPhone))
+                            {
+                                <div><small class="text-primary">@item.ContactPhone</small></div>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.DoctorName))
+                            {
+                                @item.DoctorName
+                            }
+                            else
+                            {
+                                @item.DoctorId
+                            }
+                    </td>
+                    <td>
+                        <div class="fw-semibold">@item.AppointmentTime.ToString("MM-dd")</div>
+                        <div class="text-muted small">@item.AppointmentTime.ToString("HH:mm")</div>
+                        <div class="text-muted small">@item.Duration 分钟</div>
+                    </td>
+                    <td>@item.AppointmentType</td>
+                    <td>
+                        <span class="badge
+                                    @(item.Status == "待就诊" ? "bg-warning" :
+                                                                item.Status == "已完成" ? "bg-success" :
+                                                                item.Status == "已取消" ? "bg-secondary" : "bg-primary")">
+                                @item.Status
+                                @if (item.IsExpired())
+                                {
+                                    <i class="bi bi-clock-history ms-1" title="已过期"></i>
+                                }
+                            </span>
+                        </td>
+                        <td>
+                            <div class="small">@item.CreatedAt.ToString("MM-dd")</div>
+                            <div class="text-muted small">@item.CreatedAt.ToString("HH:mm")</div>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a asp-page="Edit" asp-route-id="@item.AppointmentId"
+                                   class="btn btn-outline-primary" title="编辑">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                @if (item.Status == "待就诊" && item.CanBeCancelled())
+                                {
+                                    <button class="btn btn-outline-danger"
+                                            onclick="cancelAppointment(@item.AppointmentId)" title="取消预约">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                }
+                                @if (item.Status == "待就诊" && !item.IsExpired())
+                                {
+                                    <button class="btn btn-outline-success"
+                                            onclick="completeAppointment(@item.AppointmentId)" title="标记完成">
+                                        <i class="bi bi-check-circle"></i>
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="bi bi-calendar-x display-4"></i>
+                            <p class="mt-2">暂无预约记录</p>
+                            <a asp-page="Create" class="btn btn-primary mt-2">创建第一个预约</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- 分页控件 -->
+@if (Model.Appointments.Count > 0)
+{
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+                <a class="page-link" href="#">上一页</a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+                <a class="page-link" href="#">下一页</a>
+            </li>
+        </ul>
+    </nav>
+}
+
+@section Scripts {
+    <script>
+        function cancelAppointment(appointmentId) {
+            if (confirm('确定要取消这个预约吗？')) {
+                const reason = prompt('请输入取消原因：');
+                if (reason !== null) {
+                    // 调用取消API
+                    fetch(`/api/Appointments/${appointmentId}/cancel`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ reason: reason })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            alert('取消失败');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('取消失败');
+                    });
+                }
+            }
+        }
+
+        function completeAppointment(appointmentId) {
+            if (confirm('确定要标记这个预约为已完成吗？')) {
+                // 调用完成API
+                fetch(`/api/Appointments/${appointmentId}/complete`, {
+                    method: 'POST'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('操作失败');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('操作失败');
+                });
+            }
+        }
+
+        // 自动刷新页面（可选）
+        setTimeout(() => {
+            if (window.location.pathname === '/Appointments' && !document.hidden) {
+                // location.reload();
+            }
+        }, 30000); // 30秒刷新一次
+    </script>
+}

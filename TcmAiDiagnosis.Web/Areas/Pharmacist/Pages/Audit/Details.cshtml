@@ -1,0 +1,688 @@
+﻿@page "{id:int}"
+@model TcmAiDiagnosis.Web.Areas.Pharmacist.Pages.Audit.DetailModel
+@{
+	ViewData["Title"] = "治疗方案详情";
+}
+
+<!-- 引入 Select2 样式与脚本（放在页面 head 或局部）-->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+	.select2-container--default .select2-selection--multiple .select2-selection__choice {
+		background-color: #0d6efd; /* bootstrap primary blue-like */
+		border: none;
+		color: white;
+		padding: 2px 8px;
+		margin-right: 4px;
+		border-radius: 12px;
+	}
+
+	.select2-container .select2-selection--multiple {
+		min-height: 38px;
+		padding: 3px;
+	}
+</style>
+@if (TempData["Message"] != null)
+{
+	<div class="alert alert-success">
+		@TempData["Message"]
+	</div>
+}
+
+<!-- ========== title-wrapper start ========== -->
+<div class="title-wrapper pt-30">
+	<form method="post" asp-page-handler="SearchPatient">
+		<div class="row align-items-center">
+			<div class="col-md-8 row">
+				<div class="title col">
+					<h2>审核治疗方案</h2>
+				</div>
+			</div>
+			<!-- end col -->
+			<div class="col-md-4">
+				<div class="breadcrumb-wrapper">
+					<nav aria-label="breadcrumb">
+						<ol class="breadcrumb">
+							<li class="breadcrumb-item">
+								<a href="/Pharmacist/Audit/Index">审核列表</a>
+							</li>
+							<li class="breadcrumb-item active" aria-current="page">
+								审核治疗方案
+							</li>
+						</ol>
+					</nav>
+				</div>
+			</div>
+			<!-- end col -->
+		</div>
+		<!-- end row -->
+	</form>
+</div>
+<!-- ========== title-wrapper end ========== -->
+
+<div id="syndromeDetail" class="card detail-card p-4">
+	<div class="row mb-3">
+		<h5 class="section-title section-title-container mt-4 mb-3">诊断概要</h5>
+		<div class="row section-row mb-3">
+			<div class="col-md-6">
+
+				<p>
+					<strong>主要证候:</strong>
+					<span class="badge bg-primary">@Model.SyndromeDetail.DiagnosisInfo.Conclusion.PrimarySyndrome</span>
+				</p>
+
+				<p>
+					<strong>伴随证候:</strong>
+					@if (Model.SyndromeDetail?.DiagnosisInfo?.Conclusion?.AccompanyingSyndromes != null)
+					{
+						@foreach (var s in Model.SyndromeDetail?.DiagnosisInfo?.Conclusion?.AccompanyingSyndromes ?? new List<string>())
+						{
+							<span class="badge bg-secondary me-1 mb-1">@s</span>
+						}
+					}
+				</p>
+				<p>
+					<strong>体质辨识:</strong>
+					<span class="badge bg-secondary">@Model.SyndromeDetail.DiagnosisInfo.Conclusion.ConstitutionType</span>
+				</p>
+
+				<p>
+					<strong>推荐方剂:</strong></<br />
+					@foreach (var item in Model.SyndromeDetail.RecommendedFormulas ?? new List<string>())
+					{
+						<span class="badge bg-info text-dark me-1 mb-1">@item</span>
+					}
+				</p>
+			</div>
+
+			<div class="col-md-6">
+				<p>
+					<strong>证候分类:</strong>
+					@foreach (var item in Model.SyndromeDetail.SyndromeCategories ?? new List<string>())
+					{
+						<span class="badge bg-success me-1 mb-1">@item</span>
+					}
+				</p>
+
+				<p>
+					<strong>归属脏腑:</strong>
+					@foreach (var item in Model.SyndromeDetail.RelatedOrgans ?? new List<string>())
+					{
+						<span class="badge bg-warning text-dark me-1 mb-1">@item</span>
+					}
+				</p>
+
+				<p>
+					<strong>常见疾病:</strong>
+					@foreach (var item in Model.SyndromeDetail.CommonDiseases ?? new List<string>())
+					{
+						<span class="badge bg-danger me-1 mb-1">@item</span>
+					}
+				</p>
+				<p>
+					<strong>主要症状:</strong>
+					@foreach (var item in Model.SyndromeDetail.MainSymptoms ?? new List<string>())
+					{
+						<span class="badge bg-primary me-1 mb-1">@item</span>
+					}
+				</p>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-6">
+				<p><strong>病机概要:</strong> @Model.SyndromeDetail.PathogenesisAnalysis</p>
+				<p>
+					<strong>中医辨证:</strong>
+					@{
+						var tcmConclusion = string.Join("；", new string[] {
+										Model.SyndromeDetail.DiagnosisInfo.Analysis.PrimaryBasis,
+										Model.SyndromeDetail.DiagnosisInfo.Analysis.ConstitutionInfluence
+										});
+					}
+					@tcmConclusion
+				</p>
+			</div>
+
+			<div class="col-md-6">
+				<p><strong>临床关联:</strong> @Model.SyndromeDetail.DiagnosisInfo.Analysis.AccompanyingBasis</p>
+				<p><strong>治疗原则:</strong> @Model.SyndromeDetail.TreatmentPrinciple</p>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="row mb-3">
+		<div class="col-md-6">
+			<!-- 中药方剂部分 -->
+			<div class="section-title-container mt-4 mb-3 d-flex justify-content-between align-items-center">
+				<h5 class="section-title">中药方剂</h5>
+				<ul class="nav nav-tabs" id="prescriptionTab" role="tablist">
+					@for (int i = 0; i < Model.Treatment.Prescriptions.Count; i++)
+					{
+						var p = Model.Treatment.Prescriptions[i];
+						<li class="nav-item" role="presentation">
+							<button class="nav-link @(i == 0 ? "active" : "")"
+									id="tab-@i"
+									data-bs-toggle="tab"
+									data-bs-target="#pres-@i"
+									type="button"
+									role="tab"
+									aria-selected="@(i == 0)">
+								@p.Name
+							</button>
+						</li>
+					}
+				</ul>
+			</div>
+			<div class="tab-content" id="prescriptionTabContent">
+				@for (int i = 0; i < Model.Treatment.Prescriptions.Count; i++)
+				{
+					var p = Model.Treatment.Prescriptions[i];
+					<div class="tab-pane fade @(i == 0 ? "show active" : "")" id="pres-@i" role="tabpanel">
+						<div class="table-responsive">
+							<table class="table table-bordered table-sm">
+								<thead>
+									<tr>
+										<th>中药材</th>
+										<th>用量</th>
+										<th>炮制方法</th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach (var item in p.Items)
+									{
+										<tr>
+											<td>@item.Name</td>
+											<td>@item.Dosage@item.Unit</td>
+											<td>@item.ProcessingMethod</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+						<p><strong>功效:</strong> @p.Efficacy</p>
+						<p><strong>用法用量:</strong> @p.Usage</p>
+						<p><strong>方剂分析:</strong> @p.Description</p>
+						<p><strong>加减方:</strong> @p.Notes</p>
+					</div>
+				}
+			</div>
+		</div>
+
+		<div class="col-md-6">
+			<!-- 食疗药膳部分 -->
+			<div class="section-title-container mt-4 mb-3 d-flex justify-content-between align-items-center">
+				<h5 class="section-title">食疗药膳</h5>
+				<ul class="nav nav-tabs" id="dietaryTab" role="tablist">
+					@for (int i = 0; i < Model.Treatment.DietaryTherapies.Count; i++)
+					{
+						var therapy = Model.Treatment.DietaryTherapies[i];
+						<li class="nav-item" role="presentation">
+							<button class="nav-link @(i == 0 ? "active" : "")"
+									id="dietary-@i-tab"
+									data-bs-toggle="tab"
+									data-bs-target="#dietary-@i"
+									type="button" role="tab"
+									aria-controls="dietary-@i"
+									aria-selected="@(i == 0 ? "true" : "false")">
+								@therapy.Name
+							</button>
+						</li>
+					}
+				</ul>
+			</div>
+			<div class="tab-content" id="dietaryTabContent">
+				@for (int i = 0; i < Model.Treatment.DietaryTherapies.Count; i++)
+				{
+					var therapy = Model.Treatment.DietaryTherapies[i];
+					<div class="tab-pane fade @(i == 0 ? "show active" : "")"
+						 id="dietary-@i"
+						 role="tabpanel"
+						 aria-labelledby="dietary-@i-tab">
+
+						<div class="table-responsive">
+							<table class="table table-bordered table-sm">
+								<thead>
+									<tr>
+										<th>食材</th>
+										<th>用量</th>
+										<th>炮制/处理</th>
+									</tr>
+								</thead>
+								<tbody>
+									@foreach (var ingredient in therapy.Ingredients)
+									{
+										<tr>
+											<td>@ingredient.Name</td>
+											<td>@ingredient.Dosage</td>
+											<td>@(ingredient.ProcessingMethod ?? "")</td>
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+
+						<p><strong>功效:</strong> @therapy.Efficacy</p>
+						<p><strong>服用方法:</strong> @therapy.ServingMethod</p>
+						<p><strong>食疗描述:</strong> @therapy.Description</p>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+	<div class="row mb-3">
+		<div class="col">
+			<h5 class="section-title section-title-container mt-4 mb-3">针灸穴位推荐</h5>
+			<table class="table table-striped">
+				<thead class="">
+					<tr>
+						<th>穴位名称</th>
+						<th>位置</th>
+						<th>功效</th>
+					</tr>
+				</thead>
+
+				<tbody>
+					@foreach (var ac in Model.Treatment.Acupunctures)
+					{
+						<tr>
+							<td><strong>@ac.PointName</strong></td>
+							<td>@ac.Location</td>
+							<td>@ac.Efficacy</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			<ul>
+				<li><strong>针灸:</strong> @(Model.Treatment.Acupunctures.FirstOrDefault(a => a.Notes == "Acupuncture")?.Frequency ?? "需由专业中医师根据具体病情辨证取穴，留针15-30分钟，一般每周2-3次。")</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<div class="col">
+			<h5 class="section-title section-title-container mt-4 mb-3">拔罐治疗</h5>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th scope="col">部位/区域</th>
+						<th scope="col">适用穴位</th>
+						<th scope="col">功效</th>
+						<th scope="col">操作建议</th>
+						<th scope="col">注意事项</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var cup in Model.Treatment.Cuppings)
+					{
+						<tr>
+							<td>@cup.Area</td>
+							<td>@cup.SpecificPoints</td>
+							<td>@cup.Efficacy</td>
+							<td>@cup.TechniquePoints</td>
+							<td>@cup.Precautions</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+
+			@* @foreach (var cup in Model.Treatment.Cuppings)
+			{
+				<p><strong>操作建议:</strong> @cup.TechniquePoints</p>
+				<p><strong>注意事项:</strong> @cup.Precautions</p>
+			} *@
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<div class="col">
+			<h5 class="section-title section-title-container mt-4 mb-3">艾灸治疗</h5>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th scope="col">穴位名称</th>
+						<th scope="col">位置</th>
+						<th scope="col">功效</th>
+						<th scope="col">操作建议</th>
+						<th scope="col">注意事项</th>
+						<th scope="col">禁忌</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var mox in Model.Treatment.Moxibustions)
+					{
+						<tr>
+							<td>@mox.PointName</td>
+							<td>@mox.Location</td>
+							<td>@mox.Efficacy</td>
+							<td>@mox.TechniquePoints</td>
+							<td>@mox.Precautions</td>
+							<td>@mox.Contraindications</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+
+			@* @foreach (var mox in Model.Treatment.Moxibustions)
+			{
+				<p><strong>操作建议:</strong> @mox.TechniquePoints</p>
+				<p><strong>注意事项:</strong> @mox.Precautions</p>
+				<p><strong>禁忌:</strong> @mox.Contraindications</p>
+			} *@
+		</div>
+	</div>
+
+	<div class="row mb-3">
+		<div class="col-md-6 mb-3">
+			<h5 class="section-title section-title-container mt-4 mb-3">生活方式建议</h5>
+			@foreach (var advice in Model.Treatment.LifestyleAdvices)
+			{
+				<p><strong>@advice.Category:</strong> @advice.Content</p>
+			}
+		</div>
+		<div class="col-md-6 mb-3">
+			<h5 class="section-title section-title-container mt-4 mb-3">饮食建议</h5>
+			@foreach (var advice in Model.Treatment.DietaryAdvices)
+			{
+				<p><strong>@advice.Category:</strong> @advice.Precautions</p>
+			}
+			@foreach (var advice in Model.Treatment.DietaryAdvices)
+			{
+				@if (advice.RecommendedFoods?.Any() == true)
+				{
+					<p>
+						<strong>适宜:</strong>
+						@foreach (var food in advice.RecommendedFoods)
+						{
+							@food.FoodName
+							@if (food != advice.RecommendedFoods.Last())
+							{
+								@:", "
+							}
+						}
+					</p>
+				}
+
+				@if (advice.AvoidedFoods?.Any() == true)
+				{
+					<p>
+						<strong>忌口:</strong>
+						@foreach (var food in advice.AvoidedFoods)
+						{
+							@food.FoodName
+							@if (food != advice.AvoidedFoods.Last())
+							{
+								@:", "
+							}
+						}
+					</p>
+				}
+			}
+		</div>
+	</div>
+	<div class="row mb-3">
+		<div class="col-md-6 mb-3">
+			<h5 class="section-title section-title-container mt-4 mb-3">用药警示</h5>
+			<p>所有中药方剂和理疗方法均应在专业中医师指导下使用。不可自行长期服用清热药，需在医师指导下调整剂量和方药。</p>
+			<p>服药或接受治疗期间若有任何不适，请立即停用并及时咨询您的主治医师。</p>
+		</div>
+		<div class="col-md-6 mb-3">
+			<h5 class="section-title section-title-container mt-4 mb-3">复诊建议</h5>
+			<p>建议在治疗开始后2周内复诊，以便医师根据您的病情变化、症状改善情况以及对治疗的反应，及时调整治疗方案。请特别关注盗汗、口干、潮热等主要症状的变化。</p>
+		</div>
+	</div>
+
+	<!-- 审核按钮 -->
+	<div class="d-flex justify-content-end mt-4">
+		<form method="post" asp-page-handler="Approve" class="me-2">
+			<input type="hidden" name="id" value="@Model.TreatmentPlan.Id" />
+			<button type="submit" class="btn btn-success">审核通过</button>
+		</form>
+		<form method="post" asp-page-handler="Reject">
+			<input type="hidden" name="id" value="@Model.TreatmentPlan.Id" />
+			<button type="submit" class="btn btn-danger">驳回</button>
+		</form>
+	</div>
+</div>
+
+
+@section Scripts {
+
+	<script>
+		document.getElementById('printButton').addEventListener('click', function() {
+			window.print();
+		});
+	</script>
+
+	<script>
+		$(document).ready(function() {
+			$('#formula-selector').select2({
+				placeholder: "选择或输入方剂名称",
+				tags: true,  // 允许自定义（可输入新的方剂名）
+				width: '100%',
+			});
+		});
+	</script>
+
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+	<script>
+		$(document).ready(function () {
+			// 初始化 select2（tags: true 允许自定义新标签）
+			$('#formula-selector').select2({
+				placeholder: '选择或输入方剂（回车或逗号确认）',
+				tags: true,
+				tokenSeparators: [',', '，', ' '],
+				width: '100%'
+			});
+		});
+	</script>
+
+	@* 证候分类 *@
+	<script>
+		// 删除 tag
+		document.querySelectorAll('.tag').forEach(tag => {
+			tag.addEventListener('click', function() {
+				this.remove();
+				updateHiddenField();
+			});
+		});
+
+		// 添加新 tag
+		document.getElementById('addCategoryBtn').addEventListener('click', function() {
+			const input = document.getElementById('newCategory');
+			const val = input.value.trim();
+			if(val === '') return;
+
+			// 检查是否已存在
+			const exists = Array.from(document.querySelectorAll('.tag')).some(t => t.dataset.value === val);
+			if(exists) return;
+
+			const span = document.createElement('span');
+			span.className = 'badge bg-success me-1 mb-1 tag';
+			span.dataset.value = val;
+			span.textContent = val + ' ×';
+			span.addEventListener('click', function() { this.remove(); updateHiddenField(); });
+
+			input.parentNode.insertBefore(span, input);
+			input.value = '';
+			updateHiddenField();
+		});
+
+		// 更新隐藏字段
+		function updateHiddenField() {
+			const values = Array.from(document.querySelectorAll('.tag')).map(t => t.dataset.value);
+			document.getElementById('SyndromeCategories').value = values.join(',');
+		}
+	</script>
+
+	@* 推荐药剂 *@
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			const container = document.getElementById('formulasContainer');
+			const input = document.getElementById('newFormulas');
+			const hiddenInput = document.getElementById('RecommendedFormulas');
+			const addBtn = document.getElementById('addNewFormulas');
+
+			// 点击“添加”按钮
+			addBtn.addEventListener('click', function() {
+				const val = input.value.trim();
+				if (!val) return;
+
+				// 创建新的标签
+				const span = document.createElement('span');
+				span.className = 'badge bg-info text-dark me-1 mb-1';
+				span.setAttribute('data-value', val);
+				span.innerHTML = `${val} &times;`;
+
+				// 点击标签删除
+				span.addEventListener('click', function() {
+					span.remove();
+					updateHidden();
+				});
+
+				container.appendChild(span);
+				input.value = '';
+				updateHidden();
+			});
+
+			// 更新隐藏字段值
+			function updateHidden() {
+				const values = Array.from(container.children).map(s => s.getAttribute('data-value'));
+				hiddenInput.value = values.join(',');
+			}
+
+			// 给已有标签绑定删除事件
+			Array.from(container.children).forEach(span => {
+				span.addEventListener('click', function() {
+					span.remove();
+					updateHidden();
+				});
+			});
+		});
+	</script>
+
+	@* 归属脏腑 *@
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			const container = document.getElementById("relatedOrgansContainer");
+			const hiddenInput = document.getElementById("RelatedOrgans");
+
+			// 点击删除已有标签
+			container.addEventListener("click", function (e) {
+				if (e.target.dataset.value) {
+					e.target.remove();
+					updateHidden();
+				}
+			});
+
+			// 添加新标签
+			document.getElementById("addRelatedOrgan").addEventListener("click", function () {
+				const input = document.getElementById("newRelatedOrgan");
+				const value = input.value.trim();
+				if (value && !Array.from(container.children).some(s => s.dataset.value === value)) {
+					const span = document.createElement("span");
+					span.className = "badge bg-warning text-dark me-1 mb-1";
+					span.dataset.value = value;
+					span.textContent = value + " ×";
+					container.appendChild(span);
+					updateHidden();
+					input.value = "";
+				}
+			});
+
+			function updateHidden() {
+				const values = Array.from(container.children).map(s => s.dataset.value);
+				hiddenInput.value = values.join(",");
+			}
+		});
+	</script>
+
+	@* 常见疾病 *@
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			const container = document.getElementById('CommonDiseasesContainer');
+			const hiddenInput = document.getElementById('CommonDiseases');
+			const addBtn = document.getElementById('addNewDisease');
+			const input = document.getElementById('newDiseases');
+
+			// 给已有标签绑定删除事件
+			container.querySelectorAll('span.badge').forEach(span => {
+				span.addEventListener('click', () => removeDisease(span));
+			});
+
+			// 添加新疾病
+			addBtn.addEventListener('click', () => {
+				const val = input.value.trim();
+				if (!val) return;
+
+				let current = hiddenInput.value ? hiddenInput.value.split(',') : [];
+				if (!current.includes(val)) {
+					current.push(val);
+					hiddenInput.value = current.join(',');
+
+					const span = document.createElement('span');
+					span.className = 'badge bg-danger me-1 mb-1';
+					span.dataset.value = val;
+					span.innerHTML = `${val} &times;`;
+					span.addEventListener('click', () => removeDisease(span));
+
+					container.appendChild(span);
+				}
+				input.value = '';
+			});
+
+			function removeDisease(span) {
+				let current = hiddenInput.value ? hiddenInput.value.split(',') : [];
+				const val = span.dataset.value;
+				hiddenInput.value = current.filter(x => x !== val).join(',');
+				span.remove();
+			}
+		});
+	</script>
+
+	@* 主要症状 *@
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			const container = document.getElementById('MainSymptomsContainer');
+			const hiddenInput = document.getElementById('MainSymptoms');
+			const addBtn = document.getElementById('addNewSymptom');
+			const input = document.getElementById('newSymptom');
+
+			// 给已有标签绑定删除事件
+			container.querySelectorAll('span.badge').forEach(span => {
+				span.addEventListener('click', () => removeSymptom(span));
+			});
+
+			// 添加新症状
+			addBtn.addEventListener('click', () => {
+				const val = input.value.trim();
+				if (!val) return;
+
+				let current = hiddenInput.value ? hiddenInput.value.split(',') : [];
+				if (!current.includes(val)) {
+					current.push(val);
+					hiddenInput.value = current.join(',');
+
+					const span = document.createElement('span');
+					span.className = 'badge bg-primary me-1 mb-1';
+					span.dataset.value = val;
+					span.innerHTML = `${val} &times;`;
+					span.addEventListener('click', () => removeSymptom(span));
+
+					container.appendChild(span);
+				}
+				input.value = '';
+			});
+
+			function removeSymptom(span) {
+				let current = hiddenInput.value ? hiddenInput.value.split(',') : [];
+				const val = span.dataset.value;
+				hiddenInput.value = current.filter(x => x !== val).join(',');
+				span.remove();
+			}
+		});
+	</script>
+}
+

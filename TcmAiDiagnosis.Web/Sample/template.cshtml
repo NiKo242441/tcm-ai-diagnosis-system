@@ -1,0 +1,38 @@
+﻿@page
+@* 通过 @model [命名空间].[TemplateModel] 引用后端实体 *@
+@{
+    // ViewData["Title"] = "[页面标题]";
+}
+<!-- ========== title-wrapper start ========== -->
+<div class="title-wrapper pt-30">
+    <form method="post" asp-page-handler="SearchPatient">
+        <div class="row align-items-center">
+            <div class="col-md-8 row">
+                <div class="title col">
+                    <h2>@ViewData["Title"]</h2>
+                </div>
+            </div>
+            <!-- end col -->
+            <div class="col-md-4">
+                <div class="breadcrumb-wrapper">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="#0">@* 模块名称 *@</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                @ViewData["Title"]
+                            </li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <!-- end col -->
+        </div>
+        <!-- end row -->
+    </form>
+</div>
+<!-- ========== title-wrapper end ========== -->
+<div class="mt-4">
+    @* 页面主体内容 *@
+</div>

@@ -1,0 +1,29 @@
+﻿@page
+@model TcmAiDiagnosis.Web.Pages.HerbContraindication.CheckModel
+@{
+    ViewData["Title"] = "禁忌药材检查";
+}
+
+<h2>禁忌药材检查</h2>
+
+<form method="post" asp-page-handler="Check">
+    <label>请选择药材（多选）:</label>
+    <select asp-for="SelectedHerbIds" asp-items="@(new MultiSelectList(Model.AllHerbs, "HerbId", "HerbName"))" multiple size="10"></select>
+    <br/>
+    <button type="submit">检查禁忌</button>
+</form>
+
+@if (Model.ConflictingHerbs.Any())
+{
+    <h3>发现配伍禁忌：</h3>
+    <ul>
+        @foreach (var c in Model.ConflictingHerbs)
+        {
+            <li>@c.Herb1.HerbName 与 @c.Herb2.HerbName 禁忌</li>
+        }
+    </ul>
+}
+else if (Model.SelectedHerbIds.Any())
+{
+    <p>未发现配伍禁忌。</p>
+}

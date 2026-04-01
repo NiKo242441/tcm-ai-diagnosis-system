@@ -1,0 +1,270 @@
+﻿@page "{id:int}"
+@model TcmAiDiagnosis.Pages.Herb.EditModel
+@{
+    ViewData["Title"] = Model.Herb != null ? $"编辑药材 - {Model.Herb.HerbName}" : "编辑药材";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .toxicity-badge {
+            font-size: 0.75em;
+        }
+    </style>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        @if (Model.Herb != null)
+        {
+            <text>编辑药材 - @Model.Herb.HerbName</text>
+        }
+        else
+        {
+            <text>编辑药材</text>
+        }
+    </h2>
+    <div>
+        <a href="/Herb/Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+        @if (Model.Herb != null)
+        {
+            <a href="/Herb/Details/@Model.Herb.HerbId" class="btn btn-info">
+                <i class="fas fa-eye"></i> 查看详情
+            </a>
+        }
+    </div>
+</div>
+
+@if (Model.Herb != null)
+{
+    <div class="row">
+        <div class="col-12">
+            <form method="post">
+                <input type="hidden" asp-for="Herb.HerbId" />
+
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-edit"></i> 基本信息
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Herb.HerbName" class="form-label required">药材名称</label>
+                                    <input asp-for="Herb.HerbName" class="form-control" />
+                                    <span asp-validation-for="Herb.HerbName" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Herb.Properties" class="form-label">性味</label>
+                                    <input asp-for="Herb.Properties" class="form-control" placeholder="如：甘、平；苦、寒等" />
+                                    <span asp-validation-for="Herb.Properties" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Herb.Meridians" class="form-label">归经</label>
+                                    <input asp-for="Herb.Meridians" class="form-control" placeholder="如：心、肺、脾、胃经" />
+                                    <span asp-validation-for="Herb.Meridians" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Herb.Category" class="form-label">药材分类</label>
+                                    <select asp-for="Herb.Category" class="form-select">
+                                        <option value="">请选择分类</option>
+                                        @if (Model.Categories != null)
+                                        {
+                                            foreach (var category in Model.Categories)
+                                            {
+                                                <option value="@category">@category</option>
+                                            }
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Herb.Category" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Herb.ToxicityLevel" class="form-label">毒性等级</label>
+                                    <select asp-for="Herb.ToxicityLevel" class="form-select">
+                                        <option value="0">无毒</option>
+                                        <option value="1">小毒</option>
+                                        <option value="2">有毒</option>
+                                        <option value="3">大毒</option>
+                                    </select>
+                                    <span asp-validation-for="Herb.ToxicityLevel" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Herb.Dosage" class="form-label">用法用量</label>
+                                    <input asp-for="Herb.Dosage" class="form-control" placeholder="如：3-10g，煎服" />
+                                    <span asp-validation-for="Herb.Dosage" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Herb.Source" class="form-label">药材来源</label>
+                                    <input asp-for="Herb.Source" class="form-control" placeholder="如：植物、动物、矿物等" />
+                                    <span asp-validation-for="Herb.Source" class="text-danger"></span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Herb.ProcessingMethod" class="form-label">炮制方法</label>
+                                    <input asp-for="Herb.ProcessingMethod" class="form-control" placeholder="如：生用、炒制、炙制等" />
+                                    <span asp-validation-for="Herb.ProcessingMethod" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 功效主治 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-stethoscope"></i> 功效主治
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Herb.Efficacy" class="form-label">功效主治</label>
+                            <textarea asp-for="Herb.Efficacy" class="form-control" rows="4" placeholder="详细描述药材的功效和主治病症"></textarea>
+                            <span asp-validation-for="Herb.Efficacy" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 使用注意事项 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-exclamation-triangle"></i> 使用注意事项
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Herb.Precautions" class="form-label">使用注意事项</label>
+                            <textarea asp-for="Herb.Precautions" class="form-control" rows="3" placeholder="描述使用该药材时的注意事项"></textarea>
+                            <span asp-validation-for="Herb.Precautions" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 备注信息 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-sticky-note"></i> 备注信息
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Herb.Remarks" class="form-label">备注信息</label>
+                            <textarea asp-for="Herb.Remarks" class="form-control" rows="3" placeholder="其他需要说明的信息"></textarea>
+                            <span asp-validation-for="Herb.Remarks" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 状态设置 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-cog"></i> 状态设置
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input asp-for="Herb.IsActive" class="form-check-input" type="checkbox" role="switch">
+                                <label asp-for="Herb.IsActive" class="form-check-label">启用该药材</label>
+                            </div>
+                            <small class="text-muted">禁用后该药材将不在列表中显示，但历史记录仍会保留</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <a href="/Herb/Details/@Model.Herb.HerbId" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> 取消
+                            </a>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> 保存修改
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">
+            <i class="fas fa-exclamation-triangle"></i> 未找到药材信息
+        </h4>
+        <p class="mb-0">请求的药材不存在或已被删除。</p>
+    </div>
+    <div class="text-center mt-4">
+        <a href="/Herb/Index" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> 返回药材列表
+        </a>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // 显示操作结果消息
+        $(document).ready(function () {
+            // 设置毒性等级选择框的当前值 - 修正类型问题
+            var toxicityLevel = '@(Model.Herb?.ToxicityLevel ?? "无毒")';
+            $('#Herb_ToxicityLevel').val(toxicityLevel);
+
+            // 设置分类选择框的当前值
+            var category = '@Html.Raw(Model.Herb?.Category ?? "")';
+            if (category) {
+                $('#Herb_Category').val(category);
+            }
+
+            // 自动隐藏警告
+            setTimeout(() => {
+                $('.alert').alert('close');
+            }, 5000);
+        });
+
+        // 表单提交确认
+        $('form').on('submit', function() {
+            return confirm('确定要保存对药材信息的修改吗？');
+        });
+    </script>
+}

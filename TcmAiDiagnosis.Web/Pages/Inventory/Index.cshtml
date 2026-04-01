@@ -1,0 +1,470 @@
+﻿@page
+@model TcmAiDiagnosis.Pages.Inventory.IndexModel
+@{
+    ViewData["Title"] = "库存管理";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>库存管理</h2>
+        <div>
+            <a href="/Inventory/Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 添加库存
+            </a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-bell"></i> 库存预警
+                    @if (Model.Summary?.LowStockCount + Model.Summary?.ExpiringCount + Model.Summary?.ExpiredCount > 0)
+                    {
+                        <span class="badge bg-danger ms-1">
+                            @(Model.Summary.LowStockCount + Model.Summary.ExpiringCount + Model.Summary.ExpiredCount)
+                        </span>
+                    }
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="/Inventory/InventoryAlertRulePage">
+                            <i class="fas fa-cog"></i> 预警规则管理
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="/Inventory/InventoryAlertsPage">
+                            <i class="fas fa-exclamation-triangle"></i> 预警监控
+                            @if (Model.Summary?.LowStockCount + Model.Summary?.ExpiringCount + Model.Summary?.ExpiredCount > 0)
+                            {
+                                <span class="badge bg-danger float-end">
+                                    @(Model.Summary.LowStockCount + Model.Summary.ExpiringCount + Model.Summary.ExpiredCount)
+                                </span>
+                            }
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息提示 -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle me-2"></i>@TempData["InfoMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>@TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["DangerMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-skull-crossbones me-2"></i>@TempData["DangerMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- 搜索和筛选表单 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="searchKeyword" value="@Model.SearchKeyword"
+                           placeholder="搜索批次号、药材名称、供应商...">
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="herbId">
+                        <option value="">所有药材</option>
+                        @if (Model.Herbs != null)
+                        {
+                            foreach (var herb in Model.Herbs)
+                            {
+                                <option value="@herb.Id" selected="@(herb.Id == Model.SelectedHerbId)">@herb.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="status">
+                        <option value="">所有状态</option>
+                        <option value="Normal" selected="@("Normal" == Model.SelectedStatus)">正常</option>
+                        <option value="LowStock" selected="@("LowStock" == Model.SelectedStatus)">低库存</option>
+                        <option value="Expiring" selected="@("Expiring" == Model.SelectedStatus)">临期</option>
+                        <option value="Expired" selected="@("Expired" == Model.SelectedStatus)">过期</option>
+                        <option value="OutOfStock" selected="@("OutOfStock" == Model.SelectedStatus)">缺货</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="qualityStatus">
+                        <option value="">所有质量状态</option>
+                        <option value="Pending" selected="@("Pending" == Model.SelectedQualityStatus)">待检验</option>
+                        <option value="Qualified" selected="@("Qualified" == Model.SelectedQualityStatus)">合格</option>
+                        <option value="Unqualified" selected="@("Unqualified" == Model.SelectedQualityStatus)">不合格</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <div class="btn-group w-100">
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-1"></i> 搜索
+                        </button>
+                        <a href="/Inventory" class="btn btn-outline-secondary">
+                            <i class="fas fa-refresh me-1"></i> 重置
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 库存列表 -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>库存列表
+                </h5>
+                <div class="text-muted small">
+                    共 @Model.InventoryItems?.TotalCount 条记录
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (Model.InventoryItems?.Items?.Any() == true)
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>批次号</th>
+                                <th>药材名称</th>
+                                <th>当前库存</th>
+                                <th>采购单价</th>
+                                <th>库存位置</th>
+                                <th>有效期</th>
+                                <th>状态</th>
+                                <th>质量状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.InventoryItems.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-primary">@item.BatchNumber</div>
+                                        @if (!string.IsNullOrEmpty(item.SupplierName))
+                                        {
+                                            <small class="text-muted">供应商: @item.SupplierName</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">@item.Herb?.Name</div>
+                                        <!-- 使用药材分类信息 -->
+                                        @if (!string.IsNullOrEmpty(item.Herb?.Category))
+                                        {
+                                            <small class="text-muted">@item.Herb.Category</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold @(item.CurrentQuantity < item.InitialQuantity * 0.1m ? "text-warning" : "")">
+                                            @item.CurrentQuantity @item.Unit
+                                        </div>
+                                        @if (item.CurrentQuantity < item.InitialQuantity * 0.1m)
+                                        {
+                                            <small class="text-warning">
+                                                <i class="fas fa-exclamation-circle me-1"></i>低库存
+                                            </small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">@FormatPrice(item.PurchasePrice)</div>
+                                        @if (item.SalePrice > 0)
+                                        {
+                                            <small class="text-success">售价: @FormatPrice(item.SalePrice)</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.StorageLocation))
+                                        {
+                                            <span class="badge bg-light text-dark">@item.StorageLocation</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">未设置</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.ExpiryDate.HasValue)
+                                        {
+                                            var daysLeft = (item.ExpiryDate.Value - DateTime.Now).Days;
+                                            var textClass = daysLeft <= 0 ? "text-danger" : daysLeft <= 30 ? "text-warning" : "text-success";
+                                            var iconClass = daysLeft <= 0 ? "fa-skull-crossbones" : daysLeft <= 30 ? "fa-clock" : "fa-calendar-check";
+
+                                            <div class="@textClass">
+                                                <i class="fas @iconClass me-1"></i>
+                                                @item.ExpiryDate.Value.ToString("yyyy-MM-dd")
+                                            </div>
+                                            <small class="@textClass">
+                                                (@(daysLeft <= 0 ? "已过期" : $"{daysLeft}天"))
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                <i class="fas fa-infinity me-1"></i>无期限
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetStatusBadgeClass(item.Status)">
+                                            @GetStatusDescription(item.Status)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @GetQualityStatusBadgeClass(item.QualityStatus)">
+                                            @GetQualityStatusDescription(item.QualityStatus)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <!-- 只保留查看操作，链接到详情编辑界面 -->
+                                            <a href="/Inventory/Edit/@item.Id" class="btn btn-info btn-sm"
+                                               title="查看和编辑库存详情">
+                                                <i class="fas fa-eye me-1"></i> 查看
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页控件 -->
+                @if (Model.InventoryItems.TotalCount > Model.InventoryItems.PageSize)
+                {
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            @{
+                                var totalPages = (int)Math.Ceiling((double)Model.InventoryItems.TotalCount / Model.InventoryItems.PageSize);
+                                var currentPage = Model.InventoryItems.Page;
+                                var startPage = Math.Max(1, currentPage - 2);
+                                var endPage = Math.Min(totalPages, currentPage + 2);
+
+                                // 上一页
+                                if (currentPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?pageNumber=@(currentPage - 1)&pageSize=@Model.InventoryItems.PageSize&searchKeyword=@Model.SearchKeyword&herbId=@Model.SelectedHerbId&status=@Model.SelectedStatus&qualityStatus=@Model.SelectedQualityStatus">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                }
+
+                                // 页码
+                                for (int i = startPage; i <= endPage; i++)
+                                {
+                                    <li class="page-item @(i == currentPage ? "active" : "")">
+                                        <a class="page-link"
+                                           href="?pageNumber=@i&pageSize=@Model.InventoryItems.PageSize&searchKeyword=@Model.SearchKeyword&herbId=@Model.SelectedHerbId&status=@Model.SelectedStatus&qualityStatus=@Model.SelectedQualityStatus">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                                // 下一页
+                                if (currentPage < totalPages)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           href="?pageNumber=@(currentPage + 1)&pageSize=@Model.InventoryItems.PageSize&searchKeyword=@Model.SearchKeyword&herbId=@Model.SelectedHerbId&status=@Model.SelectedStatus&qualityStatus=@Model.SelectedQualityStatus">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">没有找到库存数据</h5>
+                    <p class="text-muted mb-4">当前筛选条件下没有匹配的库存项</p>
+                    <a href="/Inventory/Create" class="btn btn-primary me-2">
+                        <i class="fas fa-plus me-1"></i> 添加第一个库存项
+                    </a>
+                    <a href="/Inventory" class="btn btn-outline-secondary">
+                        <i class="fas fa-refresh me-1"></i> 重置筛选条件
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Normal" => "bg-success",
+            "LowStock" => "bg-warning",
+            "Expiring" => "bg-danger",
+            "Expired" => "bg-dark",
+            "OutOfStock" => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusDescription(string status)
+    {
+        return status switch
+        {
+            "Normal" => "正常",
+            "LowStock" => "低库存",
+            "Expiring" => "临期",
+            "Expired" => "过期",
+            "OutOfStock" => "缺货",
+            _ => "未知"
+        };
+    }
+
+    string GetQualityStatusBadgeClass(string qualityStatus)
+    {
+        return qualityStatus switch
+        {
+            "Pending" => "bg-warning",
+            "Qualified" => "bg-success",
+            "Unqualified" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetQualityStatusDescription(string qualityStatus)
+    {
+        return qualityStatus switch
+        {
+            "Pending" => "待检验",
+            "Qualified" => "合格",
+            "Unqualified" => "不合格",
+            _ => "未知"
+        };
+    }
+
+    // 新增：格式化价格显示（处理可为空的decimal）
+    string FormatPrice(decimal? price)
+    {
+        if (price.HasValue)
+        {
+            return $"￥{price.Value:F2}";
+        }
+        return "￥0.00";
+    }
+
+    // 新增：截断文本
+    string GetShortText(string text, int maxLength = 20)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        return text.Length > maxLength ? text.Substring(0, maxLength) + "..." : text;
+    }
+}
+
+@section Scripts {
+    <script>
+        // 页面加载时初始化
+        $(document).ready(function() {
+            // 显示操作结果消息
+            @if (TempData["SuccessMessage"] != null)
+            {
+                    <text>showAlert('success', '@Html.Raw(TempData["SuccessMessage"])');</text>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                    <text>showAlert('error', '@Html.Raw(TempData["ErrorMessage"])');</text>
+            }
+            @if (TempData["InfoMessage"] != null)
+            {
+                    <text>showAlert('info', '@Html.Raw(TempData["InfoMessage"])');</text>
+            }
+
+            // 初始化工具提示
+            $('[title]').tooltip();
+        });
+
+        // 显示消息提示
+        function showAlert(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' :
+                              type === 'error' ? 'alert-danger' : 'alert-info';
+
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">${message}</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </div>
+            `;
+
+            // 插入到页面顶部
+            $('.container-fluid').prepend(alertHtml);
+
+            // 自动关闭消息
+            setTimeout(() => {
+                $('.alert').alert('close');
+            }, 5000);
+        }
+
+        // 刷新页面数据
+        function refreshData() {
+            location.reload();
+        }
+
+        // 键盘快捷键支持
+        $(document).on('keydown', function(e) {
+            // Ctrl + R: 刷新页面
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                refreshData();
+            }
+            // Ctrl + F: 聚焦搜索框
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                $('input[name="searchKeyword"]').focus().select();
+            }
+        });
+
+        // 库存项点击行效果
+        $(document).on('click', 'tbody tr', function(e) {
+            // 排除点击操作按钮的情况
+            if (!$(e.target).closest('.btn').length) {
+                const viewBtn = $(this).find('.btn-info');
+                if (viewBtn.length) {
+                    window.location.href = viewBtn.attr('href');
+                }
+            }
+        });
+    </script>
+}
