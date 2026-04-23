@@ -437,9 +437,9 @@ dotnet test --filter Category=Integration
 
 ## 📞 联系方式
 
-- **项目负责人**: 赵东
-- **技术支持**: [support@tcmaidiagnosis.com](mailto:support@tcmaidiagnosis.com)
-- **问题反馈**: [GitHub Issues](https://github.com/your-repo/TcmAiDiagnosis/issues)
+- **项目负责人**: NiKo242441
+- **技术支持**: 
+- **问题反馈**: [GitHub Issues]()
 
 ---
 
