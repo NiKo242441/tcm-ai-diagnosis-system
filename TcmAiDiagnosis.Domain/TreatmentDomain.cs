@@ -1476,12 +1476,8 @@ namespace TcmAiDiagnosis.Domain
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "为证候 {SyndromeId} 生成AI治疗方案时发生错误", syndromeId);
-
-                    // 关键: 发生任何错误，删除占位符以允许重试
-                    _context.Treatments.Remove(placeholder);
-                    await _context.SaveChangesAsync();
-
-                    throw new TreatmentGenerationFailedException(syndromeId, "AI生成过程中发生错误", ex);
+                    _logger.LogWarning("将为证候 {SyndromeId} 使用本地 fallback 治疗方案", syndromeId);
+                    await PopulateFallbackTreatmentAsync(placeholder, syndrome, visit);
                 }
             }
             catch (Exception ex)
@@ -1781,6 +1777,259 @@ namespace TcmAiDiagnosis.Domain
                 _logger.LogError(ex, "解析治疗方案数据时发生错误");
                 throw;
             }
+        }
+
+        private async Task PopulateFallbackTreatmentAsync(Treatment treatment, Syndrome syndrome, Visit visit)
+        {
+            treatment.TcmDiagnosis = string.IsNullOrWhiteSpace(syndrome.SyndromeName)
+                ? "中医辨证治疗方案"
+                : $"{syndrome.SyndromeName}调理方案";
+            treatment.SyndromeAnalysis = !string.IsNullOrWhiteSpace(syndrome.PathogenesisAnalysis)
+                ? syndrome.PathogenesisAnalysis
+                : "基于当前证候与症状，先采用辨证调理、饮食干预和随访观察的保守治疗路径。";
+            treatment.TreatmentPrinciple = !string.IsNullOrWhiteSpace(syndrome.TreatmentPrinciple)
+                ? syndrome.TreatmentPrinciple
+                : "辨证施治，调和脏腑，改善主症。";
+            treatment.ExpectedOutcome = "缓解主症，观察一周至两周内症状变化，并根据复诊反馈动态调整方案。";
+            treatment.Precautions = "当前为本地 fallback 方案，请结合患者实际情况、既往病史和复诊结果进行人工确认。";
+
+            treatment.Prescriptions.Clear();
+            treatment.Acupunctures.Clear();
+            treatment.Moxibustions.Clear();
+            treatment.Cuppings.Clear();
+            treatment.DietaryTherapies.Clear();
+            treatment.LifestyleAdvices.Clear();
+            treatment.DietaryAdvices.Clear();
+            treatment.FollowUpAdvices.Clear();
+            treatment.HerbalWarnings.Clear();
+
+            var prescription = new Prescription
+            {
+                Treatment = treatment,
+                Name = string.IsNullOrWhiteSpace(syndrome.SyndromeName) ? "辨证基础方" : $"{syndrome.SyndromeName}基础方",
+                Category = "本地 fallback",
+                Description = "用于本机调试和流程验证的示例处方，请医生结合临床实际调整。",
+                Usage = "每日一剂，分早晚温服，连用 3-5 天后复诊评估。",
+                Efficacy = treatment.TreatmentPrinciple,
+                Indications = string.IsNullOrWhiteSpace(visit.ChiefComplaint) ? "改善当前主要不适" : visit.ChiefComplaint,
+                Contraindications = "孕产妇、儿童及合并严重基础疾病者需谨慎评估。",
+                Notes = "当前处方为示例内容，用于本地预览和确认流程。",
+                PatientFriendlyName = "调理基础方",
+                PatientFriendlyDescription = "帮助缓解当前主要不适的基础中药方案。"
+            };
+            prescription.PrescriptionItems.Add(new PrescriptionItem
+            {
+                Prescription = prescription,
+                Name = "党参",
+                Dosage = "10",
+                Unit = "g",
+                ProcessingMethod = "切片",
+                Notes = "补气健脾"
+            });
+            prescription.PrescriptionItems.Add(new PrescriptionItem
+            {
+                Prescription = prescription,
+                Name = "白术",
+                Dosage = "10",
+                Unit = "g",
+                ProcessingMethod = "炒制",
+                Notes = "健脾祛湿"
+            });
+            prescription.PrescriptionItems.Add(new PrescriptionItem
+            {
+                Prescription = prescription,
+                Name = "茯苓",
+                Dosage = "12",
+                Unit = "g",
+                ProcessingMethod = "生用",
+                Notes = "健脾渗湿"
+            });
+            treatment.Prescriptions.Add(prescription);
+
+            treatment.Acupunctures.Add(new Acupuncture
+            {
+                Treatment = treatment,
+                PointName = "足三里",
+                Location = "小腿前外侧",
+                Method = "常规针刺",
+                Technique = "平补平泻",
+                NeedleSpecification = "0.25mm x 40mm",
+                Depth = "0.8-1.2寸",
+                Duration = "20分钟",
+                Frequency = "隔日一次",
+                Efficacy = "调理脾胃，扶正培元",
+                Indications = string.IsNullOrWhiteSpace(visit.ChiefComplaint) ? "体虚乏力、纳差" : visit.ChiefComplaint,
+                Instructions = "局部常规消毒后进针。",
+                Notes = "饭后半小时内不建议针刺。",
+                Contraindications = "局部皮肤破损者慎用。"
+            });
+
+            treatment.Moxibustions.Add(new Moxibustion
+            {
+                Treatment = treatment,
+                PointName = "关元",
+                Location = "下腹部正中线",
+                Method = "温和灸",
+                MoxaType = "艾条",
+                Technique = "悬灸",
+                TemperatureControl = "局部温热舒适",
+                Duration = "10-15分钟",
+                Frequency = "每日一次",
+                CourseDuration = "5天",
+                Efficacy = "温阳散寒，调和气血",
+                Indications = "畏寒、乏力、恢复期调养",
+                TechniquePoints = "保持皮肤温热，避免烫伤。",
+                Precautions = "出现灼痛时及时移开艾条。",
+                Contraindications = "发热、局部炎症时暂不建议。",
+                PostTreatmentCare = "艾灸后注意保暖，多饮温水。",
+                CombinationTherapy = "可配合饮食和作息调理。"
+            });
+
+            treatment.Cuppings.Add(new Cupping
+            {
+                Treatment = treatment,
+                Area = "背部膀胱经",
+                SpecificPoints = "肺俞、脾俞",
+                SuitableFor = "肌肉紧张、疲劳乏力",
+                Method = "留罐",
+                CupType = "玻璃罐",
+                CupSize = "中号",
+                SuctionStrength = "中等",
+                Duration = "8-10分钟",
+                Frequency = "每周2次",
+                Efficacy = "疏通经络，缓解疲劳",
+                Indications = "肩背紧张、体倦乏力",
+                TechniquePoints = "观察皮肤反应，避免时间过长。",
+                Precautions = "皮肤敏感或出血倾向者慎用。"
+            });
+
+            var dietTherapy = new DietaryTherapy
+            {
+                Treatment = treatment,
+                Name = "山药小米粥",
+                Category = "本地 fallback",
+                Description = "适合作为恢复期和脾胃调养期的基础食疗。",
+                Preparation = "山药切块与小米同煮，煮至软烂即可。",
+                Efficacy = "健脾和胃，温和调养",
+                SuitableFor = "纳差、乏力、恢复期患者",
+                Contraindications = "血糖异常者注意总量控制。",
+                ServingMethod = "早餐或晚餐温服",
+                StorageMethod = "现做现食为佳",
+                PatientFriendlyName = "调理粥"
+            };
+            dietTherapy.DietaryTherapyIngredients.Add(new DietaryTherapyIngredient
+            {
+                DietaryTherapy = dietTherapy,
+                Name = "山药",
+                Dosage = "50g",
+                ProcessingMethod = "去皮切块",
+                Notes = "健脾"
+            });
+            dietTherapy.DietaryTherapyIngredients.Add(new DietaryTherapyIngredient
+            {
+                DietaryTherapy = dietTherapy,
+                Name = "小米",
+                Dosage = "50g",
+                ProcessingMethod = "淘洗",
+                Notes = "和胃"
+            });
+            treatment.DietaryTherapies.Add(dietTherapy);
+
+            treatment.LifestyleAdvices.Add(new LifestyleAdvice
+            {
+                Treatment = treatment,
+                Category = "起居调护",
+                Title = "规律作息",
+                Content = "尽量在 23:00 前入睡，连续观察睡眠和精神状态变化。",
+                Rationale = "稳定作息有助于脏腑功能恢复。",
+                Implementation = "保持固定睡眠时间，避免熬夜。",
+                Frequency = "每日执行",
+                Precautions = "避免过劳和情绪波动过大。",
+                Benefits = "改善疲劳感和恢复质量。"
+            });
+
+            var dietaryAdvice = new DietaryAdvice
+            {
+                Treatment = treatment,
+                Category = "饮食管理",
+                Title = "清淡温软饮食",
+                DietaryPrinciples = "少油少辣，温软易消化，避免生冷刺激。",
+                MealTiming = "三餐定时，晚餐不过饱。",
+                CookingMethods = "蒸、煮、炖为主。",
+                Rationale = "减轻脾胃负担，帮助症状恢复。",
+                SeasonalAdjustment = "天气转凉时适当增加温热食物比例。",
+                Precautions = "合并基础病者按医生建议调整。"
+            };
+            dietaryAdvice.RecommendedFoods.Add(new RecommendedFood
+            {
+                DietaryAdvice = dietaryAdvice,
+                FoodName = "山药"
+            });
+            dietaryAdvice.RecommendedFoods.Add(new RecommendedFood
+            {
+                DietaryAdvice = dietaryAdvice,
+                FoodName = "小米"
+            });
+            dietaryAdvice.AvoidedFoods.Add(new AvoidedFood
+            {
+                DietaryAdvice = dietaryAdvice,
+                FoodName = "辛辣烧烤"
+            });
+            dietaryAdvice.AvoidedFoods.Add(new AvoidedFood
+            {
+                DietaryAdvice = dietaryAdvice,
+                FoodName = "冰镇饮料"
+            });
+            treatment.DietaryAdvices.Add(dietaryAdvice);
+
+            var followUpAdvice = new FollowUpAdvice
+            {
+                Treatment = treatment,
+                FollowUpType = "门诊复诊",
+                Title = "一周后复诊评估",
+                Timing = "7天内",
+                Purpose = "评估主症变化、睡眠、饮食和体力恢复情况。",
+                PreparationRequired = "记录近一周症状变化和服药情况。",
+                EmergencyConditions = "如症状明显加重或出现异常不适，请提前就诊。",
+                SelfMonitoring = "观察主症频率、食欲和睡眠。",
+                ContactInformation = "按门诊常规方式预约复诊。"
+            };
+            followUpAdvice.MonitoringIndicators.Add(new MonitoringIndicator
+            {
+                FollowUpAdvice = followUpAdvice,
+                IndicatorName = "主症变化"
+            });
+            followUpAdvice.MonitoringIndicators.Add(new MonitoringIndicator
+            {
+                FollowUpAdvice = followUpAdvice,
+                IndicatorName = "睡眠质量"
+            });
+            treatment.FollowUpAdvices.Add(followUpAdvice);
+
+            var herbalWarning = new HerbalWarning
+            {
+                Treatment = treatment,
+                WarningType = "本地 fallback",
+                Title = "示例药物安全提醒",
+                Content = "当前为本地生成的示例方案，正式使用前请结合过敏史、妊娠情况和基础疾病人工核对。",
+                SeverityLevel = "中",
+                SymptomsToWatch = "恶心、腹泻、皮疹等不适",
+                ActionRequired = "出现明显不适及时停用并复诊",
+                PreventionMeasures = "首次使用从小剂量、短疗程开始观察",
+                SpecialPopulations = "孕产妇、儿童、老年慢病患者"
+            };
+            herbalWarning.AffectedMedications.Add(new AffectedMedication
+            {
+                HerbalWarning = herbalWarning,
+                MedicationName = "请结合患者现用西药再次核对"
+            });
+            treatment.HerbalWarnings.Add(herbalWarning);
+
+            treatment.Status = TreatmentStatus.AIGenerated;
+            treatment.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("已为证候 {SyndromeId} 生成本地 fallback 治疗方案 {TreatmentId}", syndrome.SyndromeId, treatment.Id);
         }
 
         /// <summary>

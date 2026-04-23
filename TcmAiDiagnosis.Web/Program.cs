@@ -1,10 +1,14 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 using TcmAiDiagnosis.Domain;
+using TcmAiDiagnosis.Domain.Services;
+using TcmAiDiagnosis.Domain.Validators;
 using TcmAiDiagnosis.EFContext;
 using TcmAiDiagnosis.Entities;
 using TcmAiDiagnosis.Web.Data;
+using TcmAiDiagnosis.Web.AutoMapper;
 using TcmAiDiagnosis.Web.Services;
 using TcmAiDiagnosis.Web.Extensions;
 
@@ -68,6 +72,20 @@ namespace TcmAiDiagnosis.Web
 
             builder.Services.AddOptions();
             builder.Services.AddHttpClient();
+            builder.Services.AddHttpContextAccessor();
+            //builder.Services.AddSingleton<IMapper>(_ =>
+            //    new MapperConfiguration(cfg => cfg.AddProfile<TreatmentMappingProfile>())
+            //        .CreateMapper());
+            // 替换原有的 MapperConfiguration 构造方式，使用带配置委托的构造函数
+            builder.Services.AddSingleton<IMapper>(_ =>
+            {
+                var config = new MapperConfiguration(cfg =>
+                {
+                    cfg.AddProfile<TreatmentMappingProfile>();
+                }, loggerFactory: null);
+
+                return config.CreateMapper();
+            });
 
             // 配置API HTTP客户端 - 修复这里，使用正确的地址
             builder.Services.AddHttpClient("API", client =>
@@ -89,6 +107,9 @@ namespace TcmAiDiagnosis.Web
             builder.Services.AddHostedService<BackgroundAlertCheckService>();
             builder.Services.AddHostedService<VisitSeriesAutoEndService>();
             builder.Services.AddScoped<InventoryManagementDomain>();
+            builder.Services.AddScoped<TreatmentDomain>();
+            builder.Services.AddScoped<TreatmentDataValidator>();
+            builder.Services.AddScoped<RetryPolicyService>();
             builder.Services.AddDbContext<TcmAiDiagnosisContext>();
             // 注册数据库上下文
             builder.Services.AddDbContext<TcmAiDiagnosisContext>();

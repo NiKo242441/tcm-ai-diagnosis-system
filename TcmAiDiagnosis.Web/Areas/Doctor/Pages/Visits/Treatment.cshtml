@@ -1,410 +1,525 @@
 @page
+@using System.Text.Json
 @model TcmAiDiagnosis.Web.Areas.Doctor.Pages.Visits.TreatmentModel
 @{
     ViewData["Title"] = "AI治疗方案";
 }
-<!-- ========== title-wrapper start ========== -->
-<div class="title-wrapper pt-30">
-    <form method="post" asp-page-handler="SearchPatient">
-        <div class="row align-items-center">
-            <div class="col-md-8 row">
-                <div class="title col">
-                    <h2>治疗方案</h2>
-                </div>
-            </div>
-            <!-- end col -->
-            <div class="col-md-4">
-                <div class="breadcrumb-wrapper">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="#0">问诊</a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">
-                                AI治疗方案
-                            </li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-            <!-- end col -->
-        </div>
-        <!-- end row -->
-    </form>
-</div>
-<!-- ========== title-wrapper end ========== -->
 
+@functions {
+    private static List<string> ParseJsonList(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return new List<string>();
+        }
 
-<div id="syndromeDetail" class="card detail-card p-4">
-    <!-- 证候详情内容将在此处动态更新 -->
-    <h4 class="mb-3 text-primary d-flex justify-content-between align-items-center">
-        @* <span>阴虚火旺证</span> *@
-        <span>@Model.Syndrome?.SyndromeName</span>
-        <span>
-            <button id="printButton" class="btn btn-primary">打印</button>
-            <button type="button" class="btn btn-success">AI处方单</button>
-        </span>
-    </h4>
-    <div class="row mb-3">
-        <h5 class="section-title section-title-container mt-4 mb-3">诊断概要</h5>
-        <div class="row section-row mb-3">
-            <div class="col-md-6">
-                <!-- 左侧列：描述性内容 -->
-                @* <p><strong>主要证候:</strong> <span class="badge bg-primary">阴虚火旺证</span></p> *@
-                <p><strong>主要证候:</strong> <span class="badge bg-primary">@Model.Syndrome?.SyndromeName</span></p>
-                <p><strong>伴随证候:</strong> <span class="badge bg-secondary me-1 mb-1">湿热内蕴证</span></p>
-                <p><strong>体质辨识:</strong> <span class="badge bg-secondary">脾虚湿盛</span></p>
-                <p><strong>推荐方剂:</strong> 
-                    @foreach (var formula in Model.RecommendedFormulas)
-                    {
-                        <span class="badge bg-info text-dark me-1 mb-1">@formula</span>
-                    }
-                </p>
-                @* <p><strong>推荐方剂:</strong> <span class="badge bg-info text-dark me-1 mb-1">知柏地黄丸</span><span class="badge bg-info text-dark me-1 mb-1">养阴清肺汤</span><span class="badge bg-info text-dark me-1 mb-1">大补阴丸</span></p> *@
-            </div>
-            <div class="col-md-6">
-                <!-- 右侧列：标签形式内容和鉴别诊断 -->
-                <p><strong>证候分类:</strong> 
-                    @foreach (var category in Model.SyndromeCategories)
-                    {
-                        <span class="badge bg-success me-1 mb-1">@category</span>
-                    }
-                </p>
-                @* <p><strong>证候分类:</strong> <span class="badge bg-success me-1 mb-1">虚证</span><span class="badge bg-success me-1 mb-1">火证</span></p> *@
-                <p><strong>归属脏腑:</strong> 
-                    @foreach (var organ in Model.RelatedOrgans)
-                    {
-                        <span class="badge bg-warning text-dark me-1 mb-1">@organ</span>
-                    }
-                </p>
-                @* <p><strong>归属脏腑:</strong> <span class="badge bg-warning text-dark me-1 mb-1">肺</span><span class="badge bg-warning text-dark me-1 mb-1">肾</span></p> *@
-                @* <p><strong>常见疾病:</strong> <span class="badge bg-danger me-1 mb-1">甲状腺功能亢进</span><span class="badge bg-danger me-1 mb-1">更年期综合征</span><span class="badge bg-danger me-1 mb-1">慢性咽炎</span><span class="badge bg-danger me-1 mb-1">糖尿病</span></p> *@
-                <p><strong>常见疾病:</strong>
-                    @foreach (var disease in Model.CommonDiseases)
-                    {
-                        <span class="badge bg-danger me-1 mb-1">@disease</span>
-                    }
-                </p>
-                @* <p><strong>主要症状:</strong> <span class="badge bg-primary me-1 mb-1">头晕目眩</span><span class="badge bg-primary me-1 mb-1">口干舌燥</span><span class="badge bg-primary me-1 mb-1">夜间盗汗</span><span class="badge bg-primary me-1 mb-1">小便黄赤</span><span class="badge bg-primary me-1 mb-1">大便干结</span><span class="badge bg-primary me-1 mb-1">潮热盗汗</span><span class="badge bg-primary me-1 mb-1">五心烦热</span></p> *@
-                <p><strong>主要症状:</strong> 
-                    @foreach (var symptom in Model.MainSymptoms)
-                    {
-                        <span class="badge bg-primary me-1 mb-1">@symptom</span>
-                    }
-                </p>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <p><strong>病机概要:</strong> @Model.Syndrome?.PathogenesisAnalysis</p>
-                @* <p><strong>病机概要:</strong> 阴液亏虚，虚火内生，灼津伤阴，导致津液不能濡润脏腑，虚火扰心神致失眠、心悸。</p> *@
-                <p><strong>中医辨证:</strong> 肾阴亏虚，虚火上炎，兼有湿热内蕴。病机复杂，虚实夹杂。</p>
-            </div>
-            <div class="col-md-6">
-                <p><strong>临床关联:</strong> 多见于内分泌失调、慢性消耗性疾病及更年期人群</p>
-                @* <p><strong>治疗原则:</strong> 滋阴降火，兼以清热利湿。标本兼治，扶正祛邪。</p> *@
-                <p><strong>治疗原则:</strong> @Model.Syndrome?.TreatmentPrinciple</p>
-            </div>
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <!-- 中药方剂部分 -->
-            <div class="section-title-container mt-4 mb-3 d-flex justify-content-between align-items-center">
-                <h5 class="section-title">中药方剂</h5>
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="zhubai-tab" data-bs-toggle="tab" data-bs-target="#zhubai" type="button" role="tab" aria-controls="zhubai" aria-selected="true">知柏地黄丸</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="liuwei-tab" data-bs-toggle="tab" data-bs-target="#liuwei" type="button" role="tab" aria-controls="liuwei" aria-selected="false">六味地黄丸</button>
-                    </li>
-                </ul>
-
-            </div>
-            <div class="tab-content" id="myTabContent">
-                <!-- 知柏地黄丸 Tab Pane -->
-                <div class="tab-pane fade show active" id="zhubai" role="tabpanel" aria-labelledby="zhubai-tab">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th>中药材</th>
-                                    <th>用量</th>
-                                    <th>炮制方法</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>熟地黄</td><td>12g</td><td>酒蒸</td></tr>
-                                <tr><td>山茱萸</td><td>10g</td><td>酒炙</td></tr>
-                                <tr><td>山药</td><td>10g</td><td>生用</td></tr>
-                                <tr><td>泽泻</td><td>9g</td><td>盐水炒</td></tr>
-                                <tr><td>牡丹皮</td><td>9g</td><td>酒洗</td></tr>
-                                <tr><td>茯苓</td><td>9g</td><td>生用</td></tr>
-                                <tr><td>知母</td><td>6g</td><td>盐水炒</td></tr>
-                                <tr><td>黄柏</td><td>6g</td><td>酒炒</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p><strong>功效:</strong> 滋阴降火，清热润燥。</p>
-                    <p><strong>用法用量:</strong> 水煎服，每日一剂，分早晚两次服用。或遵医嘱。</p>
-                    <p><strong>方剂分析:</strong> 方中熟地黄、山茱萸、山药滋补肝肾之阴；泽泻、牡丹皮、茯苓泻肾火、清虚热；知母、黄柏清虚火，共奏滋阴降火之功。</p>
-                    <p><strong>加减方:</strong></p>
-                    <ul>
-                        <li>若潮热盗汗明显，加用白薇6g、地骨皮9g以加强清虚热。</li>
-                        <li>若口干舌燥严重，加用石斛10g、麦冬10g以滋阴生津。</li>
-                        <li>若心烦失眠，加用酸枣仁15g、柏子仁10g以养心安神。</li>
-                    </ul>
-                </div>
-                <!-- 六味地黄丸 Tab Pane -->
-                <div class="tab-pane fade" id="liuwei" role="tabpanel" aria-labelledby="liuwei-tab">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th>中药材</th>
-                                    <th>用量</th>
-                                    <th>炮制方法</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>熟地黄</td><td>16g</td><td>酒蒸</td></tr>
-                                <tr><td>山茱萸</td><td>8g</td><td>酒炙</td></tr>
-                                <tr><td>山药</td><td>8g</td><td>生用</td></tr>
-                                <tr><td>泽泻</td><td>6g</td><td>生用</td></tr>
-                                <tr><td>牡丹皮</td><td>6g</td><td>酒洗</td></tr>
-                                <tr><td>茯苓</td><td>6g</td><td>生用</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p><strong>功效:</strong> 滋阴补肾。</p>
-                    <p><strong>用法用量:</strong> 水煎服，每日一剂，分早晚两次服用。或遵医嘱。</p>
-                    <p><strong>方剂分析:</strong> 本方由熟地黄、山茱萸、山药三补，配以泽泻、牡丹皮、茯苓三泻组成，补中有泻，滋而不腻，是滋补肾阴的经典方剂。</p>
-                    <p><strong>加减方:</strong></p>
-                    <ul>
-                        <li>若腰膝酸软明显，可加杜仲、续断以强腰膝。</li>
-                        <li>若头晕耳鸣，可加枸杞子、菊花以滋补肝肾，清头目。</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <!-- 食疗药膳部分 -->
-            <div class="section-title-container mt-4 mb-3 d-flex justify-content-between align-items-center">
-                <h5 class="section-title">食疗药膳</h5>
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="yin-er-tab" data-bs-toggle="tab" data-bs-target="#yin-er" type="button" role="tab" aria-controls="yin-er" aria-selected="true">银耳莲子羹</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="bai-he-tab" data-bs-toggle="tab" data-bs-target="#bai-he" type="button" role="tab" aria-controls="bai-he" aria-selected="false">百合雪梨汤</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="gou-qi-tab" data-bs-toggle="tab" data-bs-target="#gou-qi" type="button" role="tab" aria-controls="gou-qi" aria-selected="false">枸杞菊花茶</button>
-                    </li>
-                </ul>
-
-            </div>
-            <div class="tab-content" id="foodTherapyTabContent">
-                <!-- 银耳莲子羹 Tab Pane -->
-                <div class="tab-pane fade show active" id="yin-er" role="tabpanel" aria-labelledby="yin-er-tab">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th>食材</th>
-                                    <th>用量</th>
-                                    <th>炮制/处理</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>银耳</td><td>15g</td><td>泡发，撕小朵</td></tr>
-                                <tr><td>莲子</td><td>30g</td><td>去芯</td></tr>
-                                <tr><td>冰糖</td><td>适量</td><td>调味</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p><strong>功效:</strong> 滋阴润燥，清热安神。</p>
-                    <p><strong>用法用量:</strong> 银耳泡发后撕成小朵，与莲子一同放入炖盅，加水炖煮至软烂，加入冰糖调味。每周2-3次。</p>
-                    <p><strong>食疗分析:</strong> 银耳富含胶质，滋阴润肺；莲子养心安神，健脾益肾。两者合用，对阴虚火旺、心烦失眠有良好辅助作用。</p>
-                </div>
-
-                <!-- 百合雪梨汤 Tab Pane -->
-                <div class="tab-pane fade" id="bai-he" role="tabpanel" aria-labelledby="bai-he-tab">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th>食材</th>
-                                    <th>用量</th>
-                                    <th>炮制/处理</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>百合</td><td>30g</td><td>泡发</td></tr>
-                                <tr><td>雪梨</td><td>1个</td><td>去皮切块</td></tr>
-                                <tr><td>冰糖</td><td>适量</td><td>调味</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p><strong>功效:</strong> 润肺止咳，清心安神。</p>
-                    <p><strong>用法用量:</strong> 雪梨去皮切块，与百合一同放入锅中，加水煮沸后转小火炖煮30分钟，加入冰糖调味。每日一次。</p>
-                    <p><strong>食疗分析:</strong> 百合润肺止咳，清心除烦；雪梨生津润燥，清热化痰。适用于阴虚肺燥、咳嗽少痰、咽干口渴者。</p>
-                </div>
-
-                <!-- 枸杞菊花茶 Tab Pane -->
-                <div class="tab-pane fade" id="gou-qi" role="tabpanel" aria-labelledby="gou-qi-tab">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th>食材</th>
-                                    <th>用量</th>
-                                    <th>炮制/处理</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>枸杞</td><td>10g</td><td>干燥</td></tr>
-                                <tr><td>菊花</td><td>5g</td><td>干燥</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p><strong>功效:</strong> 滋补肝肾，清肝明目。</p>
-                    <p><strong>用法用量:</strong> 将枸杞和菊花放入杯中，冲入热水，加盖焖泡5-10分钟即可饮用。每日可多次饮用。</p>
-                    <p><strong>食疗分析:</strong> 枸杞滋补肝肾，益精明目；菊花疏散风热，清肝明目。两者搭配，对肝肾阴虚引起的目涩、头晕有益。</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col">
-            <h5 class="section-title section-title-container mt-4 mb-3">针灸/推拿穴位推荐</h5>
-            <table class="table table-striped">
-                <thead class="">
-                    <tr>
-                        <th>穴位名称</th>
-                        <th>位置</th>
-                        <th>功效</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>太溪穴</strong></td>
-                        <td>位于足内踝后方，跟腱内侧凹陷处。</td>
-                        <td>滋阴补肾，引火归元，对阴虚火旺引起的潮热、盗汗、口干有辅助疗效。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>三阴交穴</strong></td>
-                        <td>位于内踝尖上三寸，胫骨内侧缘后方。</td>
-                        <td>调补肝脾肾，滋阴养血，对月经不调、失眠、脾胃虚弱有益。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>涌泉穴</strong></td>
-                        <td>位于足底前部凹陷处，约在足底第二、三趾趾缝纹头端与足跟连线的前三分之一处。</td>
-                        <td>引火归元，滋阴降火，有助于缓解烦躁、失眠。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>足三里穴</strong></td>
-                        <td>位于外膝眼下三寸，胫骨前缘外一横指处。</td>
-                        <td>健脾益气，调和气血，增强体质，改善消化功能。</td>
-                    </tr>
-                </tbody>
-            </table>
-            <ul>
-                <li><strong>推拿:</strong> 每日早晚各一次，每个穴位按揉3-5分钟，以局部酸胀为度，手法宜轻柔，避免用力过猛。</li>
-                <li><strong>针灸:</strong> 需由专业中医师根据具体病情辨证取穴，采用泻法或平补平泻法，留针15-30分钟。一般每周2-3次。</li>
-            </ul>
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col">
-            <h5 class="section-title section-title-container mt-4 mb-3">拔罐治疗</h5>
-            <table class="table table-striped">
-                <thead class="">
-                    <tr>
-                        <th scope="col">部位/区域</th>
-                        <th scope="col">适用穴位/人群</th>
-                        <th scope="col">功效</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>背部膀胱经循行线</td>
-                        <td>可在肺俞、脾俞、肾俞等穴位进行走罐或留罐</td>
-                        <td>清宣肺热、健脾利湿、滋补肾阴，缓解因湿热内蕴引起的肢体困重、胸闷等症状</td>
-                    </tr>
-                    <tr>
-                        <td>脾胃区</td>
-                        <td>适用于脾胃湿热较重者</td>
-                        <td>健脾祛湿，有助于改善消化不良</td>
-                    </tr>
-                </tbody>
-            </table>
-            <p><strong>操作建议:</strong> 留罐时间一般为5-10分钟，皮肤潮红即可。走罐时涂抹适量介质。每周1-2次。</p>
-            <p><strong>注意事项:</strong> 皮肤有破损、过敏或凝血功能障碍者禁用。请在专业中医师指导下进行拔罐治疗。</p>
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col">
-            <h5 class="section-title section-title-container mt-4 mb-3">艾灸治疗</h5>
-            <table class="table table-striped">
-                <thead class="">
-                    <tr>
-                        <th scope="col">穴位名称</th>
-                        <th scope="col">位置</th>
-                        <th scope="col">功效</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>关元穴</td>
-                        <td>位于脐下三寸</td>
-                        <td>温补肾阳，培元固本</td>
-                    </tr>
-                    <tr>
-                        <td>气海穴</td>
-                        <td>位于脐下一点五寸</td>
-                        <td>温阳益气，培补元气</td>
-                    </tr>
-                </tbody>
-            </table>
-            <p><strong>操作建议:</strong> 若需艾灸，应采用温和灸，每次10-15分钟，皮肤温热即可，避免灼伤。不宜长时间或大剂量施灸。每周1-2次。</p>
-            <p><strong>注意事项:</strong> 阴虚火旺者不宜艾灸，以免助火伤阴。若确需艾灸，请务必在专业中医师指导下进行，并密切观察身体反应。</p>
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-6 mb-3">
-            <h5 class="section-title section-title-container mt-4 mb-3">生活方式建议</h5>
-            <p><strong>作息:</strong> 规律作息，避免熬夜，保证充足睡眠（建议每晚10点前入睡）。</p>
-            <p><strong>运动:</strong> 适度运动，如散步、太极拳、八段锦等舒缓运动，避免剧烈运动出汗过多伤阴。每日坚持30分钟。</p>
-            <p><strong>情绪:</strong> 保持心情舒畅，避免情绪激动、焦虑、抑郁。可通过冥想、听轻音乐、阅读等方式放松身心，培养兴趣爱好。</p>
-        </div>
-        <div class="col-md-6 mb-3">
-            <h5 class="section-title section-title-container mt-4 mb-3">饮食建议</h5>
-            <p><strong>适宜:</strong> 多食新鲜蔬菜水果，如冬瓜、苦瓜、西瓜、绿豆、鸭肉、甲鱼、银耳、百合、莲子、藕、豆腐等具有滋阴清热、利湿功效的食物。</p>
-            <p><strong>忌口:</strong> 忌辛辣、油腻、燥热、煎炸、烧烤等助火生湿的食物，如辣椒、生姜、羊肉、狗肉、油炸食品、咖啡、浓茶、酒精等。</p>
-            <p><strong>烹饪方式:</strong> 优先选择蒸、煮、炖、凉拌等清淡烹饪方式。</p>
-        </div>
-    </div>
-    <div class="row mb-3">
-        <div class="col-md-6 mb-3">
-            <h5 class="section-title section-title-container mt-4 mb-3">用药警示</h5>
-            <p>所有中药方剂和理疗方法均应在专业中医师指导下使用。不可自行长期服用清热药，需在医师指导下调整剂量和方药。</p>
-            <p>服药或接受治疗期间若有任何不适，请立即停用并及时咨询您的主治医师。</p>
-        </div>
-        <div class="col-md-6 mb-3">
-            <h5 class="section-title section-title-container mt-4 mb-3">复诊建议</h5>
-            <p>建议在治疗开始后2周内复诊，以便医师根据您的病情变化、症状改善情况以及对治疗的反应，及时调整治疗方案。请特别关注盗汗、口干、潮热等主要症状的变化。</p>
-        </div>
-    </div>
-</div>
-
-
-
-@section Scripts {
-
-    <script>
-        document.getElementById('printButton').addEventListener('click', function() {
-            window.print();
-        });
-    </script>
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+        }
+        catch
+        {
+            return new List<string>();
+        }
+    }
 }
+
+@{
+    var recommendedFormulas = ParseJsonList(Model.Syndrome?.RecommendedFormulas);
+    var mainSymptoms = ParseJsonList(Model.Syndrome?.MainSymptoms);
+    var commonDiseases = ParseJsonList(Model.Syndrome?.CommonDiseases);
+    var syndromeCategories = ParseJsonList(Model.Syndrome?.SyndromeCategories);
+    var relatedOrgans = ParseJsonList(Model.Syndrome?.RelatedOrgans);
+    var treatment = Model.Treatment;
+}
+
+<div class="title-wrapper pt-30">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="title">
+                <h2>治疗方案</h2>
+                <p class="text-muted mb-0">基于确认证候生成并展示真实治疗明细。</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="breadcrumb-wrapper d-flex justify-content-md-end gap-2 mt-3 mt-md-0">
+                <button id="printButton" type="button" class="btn btn-outline-primary">打印</button>
+                <form method="post" asp-page-handler="Regenerate" asp-route-visitId="@Model.VisitId" asp-route-syndromeId="@Model.SyndromeId">
+                    <button type="submit" class="btn btn-success">重新生成AI方案</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.SuccessMessage))
+{
+    <div class="alert alert-success">@Model.SuccessMessage</div>
+}
+
+<div class="card detail-card p-4 mb-4">
+    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+            <h4 class="mb-2 text-primary">@Model.Syndrome?.SyndromeName</h4>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge @Model.GetStatusBadgeClass()">@Model.GetStatusText()</span>
+                @if (!string.IsNullOrWhiteSpace(treatment?.Version))
+                {
+                    <span class="badge bg-light text-dark">版本 @treatment.Version</span>
+                }
+                @if (Model.Syndrome != null)
+                {
+                    <span class="badge bg-primary">置信度 @Model.Syndrome.Confidence%</span>
+                }
+            </div>
+        </div>
+        <div class="text-muted">
+            @if (treatment != null && treatment.CreatedAt != default)
+            {
+                <div>生成时间：@treatment.CreatedAt.ToString("yyyy-MM-dd HH:mm")</div>
+            }
+            @if (treatment?.UpdatedAt != null)
+            {
+                <div>更新时间：@treatment.UpdatedAt?.ToString("yyyy-MM-dd HH:mm")</div>
+            }
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <p><strong>病机概要：</strong>@(Model.Syndrome?.PathogenesisAnalysis ?? treatment?.SyndromeAnalysis ?? "暂无")</p>
+            <p><strong>治疗原则：</strong>@(treatment?.TreatmentPrinciple ?? Model.Syndrome?.TreatmentPrinciple ?? "暂无")</p>
+            <p><strong>中医诊断：</strong>@(string.IsNullOrWhiteSpace(treatment?.TcmDiagnosis) ? "暂无" : treatment.TcmDiagnosis)</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>预期效果：</strong>@(string.IsNullOrWhiteSpace(treatment?.ExpectedOutcome) ? "暂无" : treatment.ExpectedOutcome)</p>
+            <p><strong>注意事项：</strong>@(string.IsNullOrWhiteSpace(treatment?.Precautions) ? "暂无" : treatment.Precautions)</p>
+        </div>
+    </div>
+
+    @if (recommendedFormulas.Any() || mainSymptoms.Any() || syndromeCategories.Any() || relatedOrgans.Any() || commonDiseases.Any())
+    {
+        <div class="row mt-3">
+            <div class="col-md-12">
+                @if (recommendedFormulas.Any())
+                {
+                    <p>
+                        <strong>推荐方剂：</strong>
+                        @foreach (var item in recommendedFormulas)
+                        {
+                            <span class="badge bg-info text-dark me-1 mb-1">@item</span>
+                        }
+                    </p>
+                }
+                @if (mainSymptoms.Any())
+                {
+                    <p>
+                        <strong>主要症状：</strong>
+                        @foreach (var item in mainSymptoms)
+                        {
+                            <span class="badge bg-primary me-1 mb-1">@item</span>
+                        }
+                    </p>
+                }
+                @if (syndromeCategories.Any())
+                {
+                    <p>
+                        <strong>证候分类：</strong>
+                        @foreach (var item in syndromeCategories)
+                        {
+                            <span class="badge bg-success me-1 mb-1">@item</span>
+                        }
+                    </p>
+                }
+                @if (relatedOrgans.Any())
+                {
+                    <p>
+                        <strong>归属脏腑：</strong>
+                        @foreach (var item in relatedOrgans)
+                        {
+                            <span class="badge bg-warning text-dark me-1 mb-1">@item</span>
+                        }
+                    </p>
+                }
+                @if (commonDiseases.Any())
+                {
+                    <p>
+                        <strong>常见疾病：</strong>
+                        @foreach (var item in commonDiseases)
+                        {
+                            <span class="badge bg-danger me-1 mb-1">@item</span>
+                        }
+                    </p>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model.Treatment == null)
+{
+    <div class="alert alert-warning">当前还没有可展示的治疗方案。</div>
+}
+else
+{
+    <form method="post" asp-page-handler="Confirm" asp-route-visitId="@Model.VisitId" asp-route-syndromeId="@Model.SyndromeId" asp-route-treatmentId="@treatment!.Id">
+    <div class="d-flex justify-content-end mb-3">
+        <button type="submit" class="btn btn-primary">确认并保存所选方案</button>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card detail-card h-100 p-4">
+                <div class="section-title-container">
+                    <h5 class="section-title mb-0">中药处方</h5>
+                </div>
+
+                @if (Model.Treatment.Prescriptions.Any())
+                {
+                    @foreach (var prescription in Model.Treatment.Prescriptions)
+                    {
+                        <div class="mb-4">
+                            <label class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="SelectedPrescriptionIds" value="@prescription.Id" checked />
+                                <span class="form-check-label fw-semibold text-primary">@prescription.Name</span>
+                            </label>
+                            @if (!string.IsNullOrWhiteSpace(prescription.Description))
+                            {
+                                <p>@prescription.Description</p>
+                            }
+                            @if (prescription.Items.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>药材</th>
+                                                <th>用量</th>
+                                                <th>单位</th>
+                                                <th>炮制方法</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in prescription.Items)
+                                            {
+                                                <tr>
+                                                    <td>@item.Name</td>
+                                                    <td>@item.Dosage</td>
+                                                    <td>@item.Unit</td>
+                                                    <td>@(string.IsNullOrWhiteSpace(item.ProcessingMethod) ? "-" : item.ProcessingMethod)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            <p><strong>功效：</strong>@(string.IsNullOrWhiteSpace(prescription.Efficacy) ? "暂无" : prescription.Efficacy)</p>
+                            <p><strong>主治：</strong>@(string.IsNullOrWhiteSpace(prescription.Indications) ? "暂无" : prescription.Indications)</p>
+                            <p><strong>用法用量：</strong>@(string.IsNullOrWhiteSpace(prescription.Usage) ? "暂无" : prescription.Usage)</p>
+                            @if (!string.IsNullOrWhiteSpace(prescription.Notes))
+                            {
+                                <p><strong>备注：</strong>@prescription.Notes</p>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted mb-0">暂无中药处方数据。</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card detail-card h-100 p-4">
+                <div class="section-title-container">
+                    <h5 class="section-title mb-0">食疗方案</h5>
+                </div>
+
+                @if (Model.Treatment.DietaryTherapies.Any())
+                {
+                    @foreach (var therapy in Model.Treatment.DietaryTherapies)
+                    {
+                        <div class="food-therapy-item">
+                            <label class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="SelectedDietaryTherapyIds" value="@therapy.Id" checked />
+                                <span class="form-check-label fw-semibold">@therapy.Name</span>
+                            </label>
+                            @if (!string.IsNullOrWhiteSpace(therapy.Description))
+                            {
+                                <p>@therapy.Description</p>
+                            }
+                            @if (therapy.Ingredients.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>食材</th>
+                                                <th>用量</th>
+                                                <th>处理方法</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var ingredient in therapy.Ingredients)
+                                            {
+                                                <tr>
+                                                    <td>@ingredient.Name</td>
+                                                    <td>@ingredient.Dosage</td>
+                                                    <td>@(string.IsNullOrWhiteSpace(ingredient.ProcessingMethod) ? "-" : ingredient.ProcessingMethod)</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            <p><strong>功效：</strong>@(string.IsNullOrWhiteSpace(therapy.Efficacy) ? "暂无" : therapy.Efficacy)</p>
+                            <p><strong>制作方法：</strong>@(string.IsNullOrWhiteSpace(therapy.Preparation) ? "暂无" : therapy.Preparation)</p>
+                            <p><strong>服用方法：</strong>@(string.IsNullOrWhiteSpace(therapy.ServingMethod) ? "暂无" : therapy.ServingMethod)</p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted mb-0">暂无食疗方案数据。</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card detail-card h-100 p-4">
+                <div class="section-title-container">
+                    <h5 class="section-title mb-0">针灸与艾灸</h5>
+                </div>
+
+                @if (Model.Treatment.Acupunctures.Any())
+                {
+                    <h6 class="text-primary">针灸治疗</h6>
+                    @foreach (var item in Model.Treatment.Acupunctures)
+                    {
+                        <div class="mb-3">
+                            <label class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="SelectedAcupunctureIds" value="@item.Id" checked />
+                                <span class="form-check-label"><strong>穴位：</strong>@item.PointName</span>
+                            </label>
+                            <p><strong>定位：</strong>@item.Location</p>
+                            <p><strong>方法：</strong>@item.Method</p>
+                            <p><strong>手法：</strong>@item.Technique</p>
+                            <p><strong>频率：</strong>@item.Frequency</p>
+                            <p><strong>留针时间：</strong>@item.Duration</p>
+                            @if (!string.IsNullOrWhiteSpace(item.Notes))
+                            {
+                                <p><strong>注意事项：</strong>@item.Notes</p>
+                            }
+                        </div>
+                    }
+                }
+
+                @if (Model.Treatment.Moxibustions.Any())
+                {
+                    <h6 class="text-primary mt-4">艾灸治疗</h6>
+                    @foreach (var item in Model.Treatment.Moxibustions)
+                    {
+                        <div class="mb-3">
+                            <label class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="SelectedMoxibustionIds" value="@item.Id" checked />
+                                <span class="form-check-label"><strong>穴位：</strong>@item.PointName</span>
+                            </label>
+                            <p><strong>方法：</strong>@item.Method</p>
+                            <p><strong>材料：</strong>@item.MoxaType</p>
+                            <p><strong>频率：</strong>@item.Frequency</p>
+                            <p><strong>时长：</strong>@item.Duration</p>
+                            @if (!string.IsNullOrWhiteSpace(item.Precautions))
+                            {
+                                <p><strong>注意事项：</strong>@item.Precautions</p>
+                            }
+                        </div>
+                    }
+                }
+
+                @if (!Model.Treatment.Acupunctures.Any() && !Model.Treatment.Moxibustions.Any())
+                {
+                    <p class="text-muted mb-0">暂无针灸或艾灸数据。</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card detail-card h-100 p-4">
+                <div class="section-title-container">
+                    <h5 class="section-title mb-0">拔罐与生活方式</h5>
+                </div>
+
+                @if (Model.Treatment.Cuppings.Any())
+                {
+                    <h6 class="text-primary">拔罐治疗</h6>
+                    @foreach (var item in Model.Treatment.Cuppings)
+                    {
+                        <div class="mb-3">
+                            <label class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="SelectedCuppingIds" value="@item.Id" checked />
+                                <span class="form-check-label"><strong>部位：</strong>@item.Area</span>
+                            </label>
+                            <p><strong>穴位：</strong>@item.SpecificPoints</p>
+                            <p><strong>方法：</strong>@item.Method</p>
+                            <p><strong>留罐时间：</strong>@item.Duration</p>
+                            @if (!string.IsNullOrWhiteSpace(item.Precautions))
+                            {
+                                <p><strong>注意事项：</strong>@item.Precautions</p>
+                            }
+                        </div>
+                    }
+                }
+
+                @if (Model.Treatment.LifestyleAdvices.Any())
+                {
+                    <h6 class="text-primary mt-4">生活方式建议</h6>
+                    <ul>
+                        @foreach (var item in Model.Treatment.LifestyleAdvices)
+                        {
+                            <li class="mb-3">
+                                <label class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="SelectedLifestyleAdviceIds" value="@item.Id" checked />
+                                    <span class="form-check-label fw-semibold">@item.Title</span>
+                                </label>
+                                <div>@item.Content</div>
+                                @if (!string.IsNullOrWhiteSpace(item.Implementation))
+                                {
+                                    <div class="text-muted">实施方法：@item.Implementation</div>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @if (!Model.Treatment.Cuppings.Any() && !Model.Treatment.LifestyleAdvices.Any())
+                {
+                    <p class="text-muted mb-0">暂无拔罐或生活方式数据。</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card detail-card h-100 p-4">
+                <div class="section-title-container">
+                    <h5 class="section-title mb-0">饮食建议</h5>
+                </div>
+
+                @if (Model.Treatment.DietaryAdvices.Any())
+                {
+                    @foreach (var advice in Model.Treatment.DietaryAdvices)
+                    {
+                        <div class="mb-4">
+                            <label class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="SelectedDietaryAdviceIds" value="@advice.Id" checked />
+                                <span class="form-check-label fw-semibold text-primary">@advice.Title</span>
+                            </label>
+                            <p><strong>饮食原则：</strong>@(string.IsNullOrWhiteSpace(advice.DietaryPrinciples) ? "暂无" : advice.DietaryPrinciples)</p>
+                            <p><strong>用餐时间：</strong>@(string.IsNullOrWhiteSpace(advice.MealTiming) ? "暂无" : advice.MealTiming)</p>
+                            <p><strong>烹饪方法：</strong>@(string.IsNullOrWhiteSpace(advice.CookingMethods) ? "暂无" : advice.CookingMethods)</p>
+                            @if (advice.RecommendedFoods.Any())
+                            {
+                                <p>
+                                    <strong>推荐食物：</strong>
+                                    @foreach (var food in advice.RecommendedFoods)
+                                    {
+                                        <span class="badge bg-success me-1 mb-1">@food.FoodName</span>
+                                    }
+                                </p>
+                            }
+                            @if (advice.AvoidedFoods.Any())
+                            {
+                                <p>
+                                    <strong>避免食物：</strong>
+                                    @foreach (var food in advice.AvoidedFoods)
+                                    {
+                                        <span class="badge bg-danger me-1 mb-1">@food.FoodName</span>
+                                    }
+                                </p>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted mb-0">暂无饮食建议数据。</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card detail-card h-100 p-4">
+                <div class="section-title-container">
+                    <h5 class="section-title mb-0">随访与安全提醒</h5>
+                </div>
+
+                @if (Model.Treatment.FollowUpAdvices.Any())
+                {
+                    <h6 class="text-primary">随访建议</h6>
+                    @foreach (var advice in Model.Treatment.FollowUpAdvices)
+                    {
+                        <div class="mb-4">
+                            <label class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="SelectedFollowUpAdviceIds" value="@advice.Id" checked />
+                                <span class="form-check-label fw-semibold">@advice.Title</span>
+                            </label>
+                            <p><strong>时间：</strong>@advice.Timing</p>
+                            <p><strong>目的：</strong>@advice.Purpose</p>
+                            @if (advice.MonitoringIndicators.Any())
+                            {
+                                <p>
+                                    <strong>监测指标：</strong>
+                                    @foreach (var item in advice.MonitoringIndicators)
+                                    {
+                                        <span class="badge bg-info text-dark me-1 mb-1">@item.IndicatorName</span>
+                                    }
+                                </p>
+                            }
+                        </div>
+                    }
+                }
+
+                @if (Model.Treatment.HerbalWarnings.Any())
+                {
+                    <h6 class="text-primary mt-4">中药安全警告</h6>
+                    @foreach (var warning in Model.Treatment.HerbalWarnings)
+                    {
+                        <div class="alert alert-warning mb-3">
+                            <label class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="SelectedHerbalWarningIds" value="@warning.Id" checked />
+                                <span class="form-check-label fw-semibold">@warning.Title</span>
+                            </label>
+                            <div>@warning.Content</div>
+                            @if (warning.AffectedMedications.Any())
+                            {
+                                <div class="mt-2">
+                                    @foreach (var medication in warning.AffectedMedications)
+                                    {
+                                        <span class="badge bg-dark me-1 mb-1">@medication.MedicationName</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+
+                @if (!Model.Treatment.FollowUpAdvices.Any() && !Model.Treatment.HerbalWarnings.Any())
+                {
+                    <p class="text-muted mb-0">暂无随访或安全提醒数据。</p>
+                }
+            </div>
+        </div>
+    </div>
+    </form>
+}
+
+<script>
+    document.getElementById('printButton')?.addEventListener('click', function () {
+        window.print();
+    });
+</script>
